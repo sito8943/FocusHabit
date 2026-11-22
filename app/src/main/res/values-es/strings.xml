@@ -6,8 +6,6 @@
     <string name="today_summary">%1$d/%2$d hechos</string>
     <string name="today_back_to_today">Volver a hoy</string>
     <string name="today_empty">Aún no hay hábitos. ¡Añade uno abajo!</string>
-    <string name="today_streak">%1$dd</string>
-    <string name="today_streak_description">Racha actual: %1$d días</string>
     <string name="habit_delete">Borrar hábito</string>
     <string name="habit_delete_title">¿Borrar \"%1$s\"?</string>
     <string name="habit_delete_message">También se borrará su historial.</string>
@@ -43,4 +41,32 @@
     <string name="common_cancel">Cancelar</string>
     <string name="common_delete">Borrar</string>
     <string name="common_close">Cerrar</string>
+    <string name="day_today">Hoy</string>
+    <string name="day_yesterday">Ayer</string>
+    <string name="day_tomorrow">Mañana</string>
+    <string name="today_habits">Hábitos</string>
+    <string name="today_percent">%1$d %%</string>
+    <string name="hero_day_streak">Días seguidos</string>
+    <string name="habit_no_streak">Sin racha todavía</string>
+    <string name="habit_state_done">Hecho</string>
+    <string name="habit_state_pending">Pendiente</string>
+    <plurals name="habit_streak_days">
+        <item quantity="one">Racha de %1$d día</item>
+        <item quantity="many">Racha de %1$d días</item>
+        <item quantity="other">Racha de %1$d días</item>
+    </plurals>
+    <string name="detail_momentum">Últimos 6 meses</string>
+    <plurals name="detail_days_completed">
+        <item quantity="one">%1$d día completado</item>
+        <item quantity="many">%1$d días completados</item>
+        <item quantity="other">%1$d días completados</item>
+    </plurals>
+    <string name="detail_streak">Racha</string>
+    <string name="detail_current_days">Días actuales</string>
+    <string name="detail_best">Mejor racha</string>
+    <string name="detail_all_time">Récord histórico</string>
+    <string name="detail_weekly">Actividad semanal · 12 semanas</string>
+    <string name="detail_mark_today">Marcar hoy como hecho</string>
+    <string name="detail_unmark_today">Deshacer hoy</string>
+    <string name="common_back">Volver</string>
 </resources>

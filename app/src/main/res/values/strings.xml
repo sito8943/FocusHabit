@@ -8,8 +8,6 @@
     <string name="today_summary">%1$d/%2$d done</string>
     <string name="today_back_to_today">Back to today</string>
     <string name="today_empty">No habits yet. Add one below!</string>
-    <string name="today_streak">%1$dd</string>
-    <string name="today_streak_description">Current streak: %1$d days</string>
     <string name="habit_delete">Delete habit</string>
     <string name="habit_delete_title">Delete \"%1$s\"?</string>
     <string name="habit_delete_message">Its history will be deleted too.</string>
@@ -45,4 +43,30 @@
     <string name="common_cancel">Cancel</string>
     <string name="common_delete">Delete</string>
     <string name="common_close">Close</string>
+    <string name="day_today">Today</string>
+    <string name="day_yesterday">Yesterday</string>
+    <string name="day_tomorrow">Tomorrow</string>
+    <string name="today_habits">Habits</string>
+    <string name="today_percent">%1$d%%</string>
+    <string name="hero_day_streak">Day streak</string>
+    <string name="habit_no_streak">No streak yet</string>
+    <string name="habit_state_done">Done</string>
+    <string name="habit_state_pending">Not done</string>
+    <plurals name="habit_streak_days">
+        <item quantity="one">%1$d-day streak</item>
+        <item quantity="other">%1$d-day streak</item>
+    </plurals>
+    <string name="detail_momentum">Last 6 months</string>
+    <plurals name="detail_days_completed">
+        <item quantity="one">%1$d day completed</item>
+        <item quantity="other">%1$d days completed</item>
+    </plurals>
+    <string name="detail_streak">Streak</string>
+    <string name="detail_current_days">Current days</string>
+    <string name="detail_best">Best streak</string>
+    <string name="detail_all_time">All-time record</string>
+    <string name="detail_weekly">Weekly activity · 12 weeks</string>
+    <string name="detail_mark_today">Mark today as done</string>
+    <string name="detail_unmark_today">Undo today</string>
+    <string name="common_back">Back</string>
 </resources>

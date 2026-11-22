@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -48,6 +50,7 @@ import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.di.AppContainer
 import dev.sito8943.focushabit.core.sync.SyncStatus
 import dev.sito8943.focushabit.feature.calendar.CalendarScreen
+import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
 import dev.sito8943.focushabit.ui.theme.Alice
@@ -59,6 +62,7 @@ private enum class Tab { Today, Calendar }
 fun MainScreen(container: AppContainer) {
     var tab by rememberSaveable { mutableStateOf(Tab.Today) }
     var showRecovery by rememberSaveable { mutableStateOf(false) }
+    var openHabit by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val today = viewModel { container.createTodayViewModel() }
     val calendar = viewModel { container.createCalendarViewModel() }
@@ -72,6 +76,11 @@ fun MainScreen(container: AppContainer) {
     }
 
     BackHandler(enabled = tab != Tab.Today) { tab = Tab.Today }
+
+    openHabit?.let { habitId ->
+        HabitDetailRoute(container, habitId, onClose = { openHabit = null })
+        return
+    }
 
     Scaffold(
         topBar = {
@@ -138,9 +147,9 @@ fun MainScreen(container: AppContainer) {
                     TodayScreen(
                         state = state,
                         onToggle = today::toggle,
-                        onDelete = today::delete,
+                        onOpen = { openHabit = it },
                         onAdd = today::addHabit,
-                        onShiftDay = today::shiftDay,
+                        onSelectDay = today::select,
                         onBackToToday = today::backToToday,
                     )
                 }
@@ -174,6 +183,26 @@ fun MainScreen(container: AppContainer) {
                 showRecovery = false
                 recovery.reset()
             },
+        )
+    }
+}
+
+@Composable
+private fun HabitDetailRoute(container: AppContainer, habitId: Long, onClose: () -> Unit) {
+    val detail = viewModel(key = "habit-$habitId") { container.createHabitDetailViewModel(habitId) }
+    val state by detail.state.collectAsStateWithLifecycle()
+    BackHandler(onBack = onClose)
+    // Deleted here or by a sync from another device.
+    LaunchedEffect(state.loading, state.habit) {
+        if (!state.loading && state.habit == null) onClose()
+    }
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        HabitDetailScreen(
+            state = state,
+            onBack = onClose,
+            onToggleToday = detail::toggleToday,
+            onDelete = { detail.delete(onClose) },
+            modifier = Modifier.safeDrawingPadding(),
         )
     }
 }
