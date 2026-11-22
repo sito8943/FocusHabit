@@ -1,6 +1,11 @@
 package dev.sito8943.focushabit.feature.today
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.draw.rotate
+import dev.sito8943.focushabit.ui.patterns.HeatLegend
+import dev.sito8943.focushabit.ui.patterns.Heatmap
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -66,9 +71,7 @@ import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.Celebration
-import dev.sito8943.focushabit.ui.patterns.DotGrid
 import dev.sito8943.focushabit.ui.patterns.FocusCard
-import dev.sito8943.focushabit.ui.patterns.ProgressRing
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
@@ -112,7 +115,7 @@ fun TodayScreen(
         ) {
             item(key = "header") { DayHeader(state, onBackToToday) }
             item(key = "strip") { WeekStrip(state, onSelectDay) }
-            item(key = "hero") { HeroCard(state, Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
+            item(key = "hero") { ProgressAccordion(state, Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
             item(key = "label") {
                 SectionLabel(
                     stringResource(R.string.today_habits),
@@ -276,42 +279,63 @@ private fun WeekStrip(state: TodayUiState, onSelect: (LocalDate) -> Unit) {
     }
 }
 
-/** Day progress ring and overall streak with the last weeks as dots. */
+/**
+ * Collapsible summary: "n/m · %" and the perfect-days streak always visible;
+ * expanded, a 4-row GitHub-style map of how complete each day was.
+ */
 @Composable
-private fun HeroCard(state: TodayUiState, modifier: Modifier = Modifier) {
+private fun ProgressAccordion(state: TodayUiState, modifier: Modifier = Modifier) {
+    var expanded by rememberSaveable { mutableStateOf(true) }
+    val rotation by animateFloatAsState(if (expanded) 180f else 0f, label = "chevron")
     FocusCard(modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            ProgressRing(progress = state.progress, size = 104.dp) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        stringResource(R.string.today_percent, (state.progress * 100).roundToInt()),
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Text(
-                        stringResource(R.string.today_summary, state.doneCount, state.dueCount),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-            Spacer(Modifier.width(20.dp))
-            Column(Modifier.weight(1f)) {
-                Text(
-                    state.perfectStreak.toString(),
-                    fontSize = 48.sp,
-                    lineHeight = 48.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.tertiary,
-                )
-                SectionLabel(stringResource(R.string.hero_day_streak))
-                Spacer(Modifier.height(10.dp))
-                DotGrid(
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(12.dp))
+                .clickable(role = Role.Button) { expanded = !expanded },
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                stringResource(R.string.today_summary, state.doneCount, state.dueCount),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                stringResource(R.string.today_percent, (state.progress * 100).roundToInt()),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.weight(1f))
+            FaIcon(Fa.Fire, contentDescription = null, Modifier.size(18.dp), tint = FocusColors.Today)
+            Spacer(Modifier.width(4.dp))
+            Text(
+                pluralStringResource(R.plurals.hero_streak_days, state.perfectStreak, state.perfectStreak),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+            )
+            Spacer(Modifier.width(8.dp))
+            FaIcon(
+                Fa.ChevronDown,
+                contentDescription = stringResource(if (expanded) R.string.common_collapse else R.string.common_expand),
+                Modifier.size(16.dp).rotate(rotation),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        AnimatedVisibility(expanded) {
+            Column(Modifier.padding(top = 14.dp)) {
+                Heatmap(
                     end = state.today,
-                    weeks = 8,
-                    value = { state.completion[it] ?: 0f },
-                    dot = 8.dp,
-                    gap = 3.dp,
+                    value = { state.completion[it] },
+                    today = state.today,
+                    todayColor = FocusColors.Today,
+                )
+                Spacer(Modifier.height(10.dp))
+                HeatLegend(
+                    less = stringResource(R.string.heat_less),
+                    more = stringResource(R.string.heat_more),
+                    modifier = Modifier.align(Alignment.End),
                 )
             }
         }

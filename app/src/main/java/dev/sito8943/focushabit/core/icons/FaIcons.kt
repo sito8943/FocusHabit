@@ -108,6 +108,7 @@ fun FaGlyph(
 object Fa {
     const val ChevronLeft = "chevron-left"
     const val ChevronRight = "chevron-right"
+    const val ChevronDown = "chevron-down"
     const val Plus = "plus"
     const val Close = "xmark"
     const val Minus = "minus"

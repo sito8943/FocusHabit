@@ -45,7 +45,6 @@
     <string name="day_tomorrow">Tomorrow</string>
     <string name="today_habits">Habits</string>
     <string name="today_percent">%1$d%%</string>
-    <string name="hero_day_streak">Day streak</string>
     <string name="habit_no_streak">No streak yet</string>
     <string name="habit_state_done">Done</string>
     <string name="habit_state_pending">Not done</string>
@@ -136,5 +135,13 @@
     <plurals name="detail_days_clean">
         <item quantity="one">%1$d clean day</item>
         <item quantity="other">%1$d clean days</item>
+    </plurals>
+    <string name="heat_less">Less</string>
+    <string name="heat_more">More</string>
+    <string name="common_expand">Expand</string>
+    <string name="common_collapse">Collapse</string>
+    <plurals name="hero_streak_days">
+        <item quantity="one">%1$d day streak</item>
+        <item quantity="other">%1$d day streak</item>
     </plurals>
 </resources>

@@ -61,32 +61,6 @@ fun SectionLabel(text: String, modifier: Modifier = Modifier, color: Color = Mat
     )
 }
 
-/** Day progress ring; animates when a habit is checked. */
-@Composable
-fun ProgressRing(
-    progress: Float,
-    modifier: Modifier = Modifier,
-    size: Dp = 96.dp,
-    stroke: Dp = 10.dp,
-    color: Color = MaterialTheme.colorScheme.primary,
-    track: Color = MaterialTheme.colorScheme.primaryContainer,
-    content: @Composable () -> Unit,
-) {
-    val animated by animateFloatAsState(progress.coerceIn(0f, 1f), label = "progress")
-    Box(modifier.size(size), contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize()) {
-            val width = stroke.toPx()
-            val style = Stroke(width = width, cap = StrokeCap.Round)
-            val inset = width / 2
-            val arcSize = androidx.compose.ui.geometry.Size(this.size.width - width, this.size.height - width)
-            val topLeft = androidx.compose.ui.geometry.Offset(inset, inset)
-            drawArc(track, 0f, 360f, false, topLeft, arcSize, style = Stroke(width))
-            if (animated > 0f) drawArc(color, -90f, 360f * animated, false, topLeft, arcSize, style = style)
-        }
-        content()
-    }
-}
-
 /**
  * GitHub-style grid: one column per week (Monday on top), ending with the week
  * of [end]. [value] is 0..1; days after [end] are not drawn.
