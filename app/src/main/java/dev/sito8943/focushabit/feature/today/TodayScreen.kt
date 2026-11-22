@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -31,7 +32,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,7 +45,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -190,10 +192,16 @@ private const val FUTURE_DAYS = 7L
 private fun WeekStrip(state: TodayUiState, onSelect: (LocalDate) -> Unit) {
     val first = state.today.minusDays(PAST_DAYS)
     val days = (0..PAST_DAYS + FUTURE_DAYS).map { first.plusDays(it) }
-    val listState = rememberLazyListState()
     val selectedIndex = days.indexOf(state.date)
+    // Start already on the selected day: an animated scroll launched on the
+    // first frame gets lost before the row is laid out and leaves it on day one.
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = (selectedIndex - 3).coerceAtLeast(0))
     LaunchedEffect(selectedIndex) {
-        if (selectedIndex >= 0) listState.animateScrollToItem((selectedIndex - 3).coerceAtLeast(0))
+        if (selectedIndex < 0) return@LaunchedEffect
+        val visible = listState.layoutInfo.visibleItemsInfo.map { it.index }
+        if (selectedIndex !in visible.drop(1).dropLast(1)) {
+            listState.animateScrollToItem((selectedIndex - 3).coerceAtLeast(0))
+        }
     }
     val locale = Locale.getDefault()
     LazyRow(
@@ -390,25 +398,24 @@ private fun HabitForm(onAdd: (String, String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            OutlinedTextField(
+            CompactTextField(
                 value = name,
                 onValueChange = { name = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text(stringResource(R.string.habit_new_placeholder)) },
-                singleLine = true,
-                shape = RoundedCornerShape(14.dp),
-                keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences,
-                    imeAction = ImeAction.Done,
-                ),
-                keyboardActions = KeyboardActions(onDone = { submit() }),
+                placeholder = stringResource(R.string.habit_new_placeholder),
+                onDone = submit,
+                modifier = Modifier.weight(1f).height(FORM_HEIGHT),
             )
             Spacer(Modifier.width(8.dp))
-            Button(onClick = submit, enabled = name.isNotBlank()) {
+            Button(
+                onClick = submit,
+                enabled = name.isNotBlank(),
+                modifier = Modifier.height(FORM_HEIGHT),
+                shape = RoundedCornerShape(12.dp),
+            ) {
                 Text(stringResource(R.string.habit_add))
             }
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
             HabitColors.palette.forEach { hex ->
                 ColorSwatch(hex = hex, selected = hex == color, onClick = { color = hex })
             }
@@ -419,22 +426,71 @@ private fun HabitForm(onAdd: (String, String) -> Unit) {
 @Composable
 private fun ColorSwatch(hex: String, selected: Boolean, onClick: () -> Unit) {
     val description = stringResource(R.string.habit_select_color, hex)
+    // 16dp dot (half the old size) inside a 32dp tap area, so it stays easy to hit.
     Box(
         modifier = Modifier
             .size(32.dp)
             .clip(CircleShape)
-            .background(FocusColors.parse(hex))
-            .border(
-                width = 2.dp,
-                color = if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent,
-                shape = CircleShape,
-            )
             .clickable(role = Role.RadioButton, onClick = onClick)
             .semantics { contentDescription = description },
         contentAlignment = Alignment.Center,
     ) {
-        if (selected) {
-            Icon(Icons.Filled.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-        }
+        Box(
+            Modifier
+                .size(if (selected) 20.dp else 16.dp)
+                .border(2.dp, if (selected) MaterialTheme.colorScheme.onSurface else Color.Transparent, CircleShape)
+                .padding(if (selected) 3.dp else 0.dp)
+                .background(FocusColors.parse(hex), CircleShape),
+        )
     }
+}
+
+private val FORM_HEIGHT = 44.dp
+
+/** Single-line field at button height (OutlinedTextField cannot go below 56dp). */
+@Composable
+private fun CompactTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    placeholder: String,
+    onDone: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var focused by remember { mutableStateOf(false) }
+    BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = modifier.onFocusChanged { focused = it.isFocused },
+        singleLine = true,
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
+        keyboardOptions = KeyboardOptions(
+            capitalization = KeyboardCapitalization.Sentences,
+            imeAction = ImeAction.Done,
+        ),
+        keyboardActions = KeyboardActions(onDone = { onDone() }),
+        decorationBox = { field ->
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(12.dp))
+                    .border(
+                        if (focused) 2.dp else 1.dp,
+                        if (focused) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline,
+                        RoundedCornerShape(12.dp),
+                    )
+                    .padding(horizontal = 14.dp),
+                contentAlignment = Alignment.CenterStart,
+            ) {
+                if (value.isEmpty()) {
+                    Text(
+                        placeholder,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                field()
+            }
+        },
+    )
 }
