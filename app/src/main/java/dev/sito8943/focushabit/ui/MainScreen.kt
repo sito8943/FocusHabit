@@ -226,7 +226,7 @@ private fun SyncBanner(status: SyncStatus) {
         is SyncStatus.Failed ->
             if (status.offline) stringResource(R.string.sync_offline)
             else stringResource(R.string.sync_failed, status.message)
-        SyncStatus.NotConfigured -> stringResource(R.string.sync_not_configured)
+        // Local-only build: nothing to warn about, data lives on the phone by design.
         else -> return
     }
     // Informational, not an error: data is safe on the phone.
