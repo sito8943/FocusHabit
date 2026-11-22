@@ -46,7 +46,7 @@ import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.DotGrid
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
-import dev.sito8943.focushabit.ui.theme.Alice
+import dev.sito8943.focushabit.ui.theme.Bebas
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
 import java.time.format.TextStyle
@@ -79,7 +79,7 @@ fun HabitDetailScreen(
             Text(
                 habit.name,
                 modifier = Modifier.weight(1f),
-                fontFamily = Alice,
+                fontFamily = Bebas,
                 fontSize = 30.sp,
                 color = MaterialTheme.colorScheme.tertiary,
                 maxLines = 1,

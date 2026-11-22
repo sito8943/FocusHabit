@@ -61,7 +61,7 @@ import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.FormHeight
 import dev.sito8943.focushabit.ui.patterns.HabitTile
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
-import dev.sito8943.focushabit.ui.theme.Alice
+import dev.sito8943.focushabit.ui.theme.Bebas
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
 import java.time.format.TextStyle
@@ -86,7 +86,7 @@ fun HabitFormScreen(
             Text(
                 stringResource(if (isEdit) R.string.form_title_edit else R.string.form_title_new),
                 modifier = Modifier.weight(1f),
-                fontFamily = Alice,
+                fontFamily = Bebas,
                 fontSize = 28.sp,
                 color = MaterialTheme.colorScheme.tertiary,
             )

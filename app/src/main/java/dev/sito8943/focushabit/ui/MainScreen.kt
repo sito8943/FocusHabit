@@ -54,7 +54,7 @@ import dev.sito8943.focushabit.feature.form.HabitFormScreen
 import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
-import dev.sito8943.focushabit.ui.theme.Alice
+import dev.sito8943.focushabit.ui.theme.Bebas
 
 private enum class Tab { Today, Calendar }
 
@@ -103,7 +103,7 @@ fun MainScreen(container: AppContainer) {
                         Spacer(Modifier.width(12.dp))
                         Text(
                             stringResource(R.string.app_name),
-                            fontFamily = Alice,
+                            fontFamily = Bebas,
                             fontSize = 28.sp,
                             color = MaterialTheme.colorScheme.tertiary,
                         )

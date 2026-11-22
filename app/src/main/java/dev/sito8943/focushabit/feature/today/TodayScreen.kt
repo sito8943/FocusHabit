@@ -69,7 +69,7 @@ import dev.sito8943.focushabit.ui.patterns.DotGrid
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.ProgressRing
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
-import dev.sito8943.focushabit.ui.theme.Alice
+import dev.sito8943.focushabit.ui.theme.Bebas
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.LocalDate
 import java.time.LocalTime
@@ -179,7 +179,7 @@ private fun DayHeader(state: TodayUiState, onBackToToday: () -> Unit) {
                     state.today.plusDays(1) -> stringResource(R.string.day_tomorrow)
                     else -> state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
                 },
-                fontFamily = Alice,
+                fontFamily = Bebas,
                 fontSize = 34.sp,
                 color = MaterialTheme.colorScheme.tertiary,
                 maxLines = 1,

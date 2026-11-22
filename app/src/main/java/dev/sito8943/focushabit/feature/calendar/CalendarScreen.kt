@@ -30,7 +30,7 @@ import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
-import dev.sito8943.focushabit.ui.theme.Alice
+import dev.sito8943.focushabit.ui.theme.Bebas
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.ui.theme.FocusColors
@@ -66,7 +66,7 @@ fun CalendarScreen(
                 text = "${state.month.month.getDisplayName(TextStyle.FULL_STANDALONE, locale)} ${state.month.year}"
                     .replaceFirstChar { it.titlecase(locale) },
                 modifier = Modifier.weight(1f),
-                fontFamily = Alice,
+                fontFamily = Bebas,
                 fontSize = 30.sp,
                 color = MaterialTheme.colorScheme.tertiary,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,

@@ -60,8 +60,8 @@ val Roboto = FontFamily(
     roboto(FontWeight.Bold),
 )
 
-/** Display font for the wordmark (the web's h1). */
-val Alice = FontFamily(Font(R.font.alice_regular))
+/** Titles and wordmark: Bebas Neue, the closest free font to the logo's F (uppercase only). */
+val Bebas = FontFamily(Font(R.font.bebas_neue))
 
 private val Light = with(Brand) {
     lightColorScheme(

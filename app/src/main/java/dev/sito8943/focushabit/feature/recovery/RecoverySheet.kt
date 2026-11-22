@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
-import dev.sito8943.focushabit.ui.theme.Alice
+import dev.sito8943.focushabit.ui.theme.Bebas
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,7 +62,7 @@ fun RecoverySheet(
         ) {
             Text(
                 stringResource(R.string.recovery_title),
-                fontFamily = Alice,
+                fontFamily = Bebas,
                 fontSize = 30.sp,
                 color = MaterialTheme.colorScheme.tertiary,
             )
