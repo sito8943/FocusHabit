@@ -2,6 +2,7 @@ package dev.sito8943.focushabit
 
 import android.app.Application
 import dev.sito8943.focushabit.core.di.AppContainer
+import dev.sito8943.focushabit.core.icons.FaIcons
 
 class FocusHabitApp : Application() {
 
@@ -10,6 +11,7 @@ class FocusHabitApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        FaIcons.init(this)
         container = AppContainer(this)
         container.syncCoordinator.start()
     }

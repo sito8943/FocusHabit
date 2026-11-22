@@ -36,6 +36,21 @@ data class HabitEntity(
     val createdAt: String,
     @ColumnInfo(name = "deleted_at")
     val deletedAt: String? = null,
+    // Local only for now: the server (and the web) do not have these yet.
+    /** Font Awesome icon name. */
+    val icon: String? = null,
+    /** `build` or `quit`. */
+    @ColumnInfo(defaultValue = "build")
+    val kind: String = "build",
+    /** `daily`, `weekdays`, `interval`, `week` or `month` (see `Frequency.storage`). */
+    @ColumnInfo(defaultValue = "daily")
+    val frequency: String = "daily",
+    @ColumnInfo(name = "frequency_value", defaultValue = "1")
+    val frequencyValue: Int = 1,
+    val goal: Int? = null,
+    /** `YYYY-MM-DD`, local day the habit started counting. */
+    @ColumnInfo(name = "start_date", defaultValue = "")
+    val startDate: String = "",
 )
 
 /**

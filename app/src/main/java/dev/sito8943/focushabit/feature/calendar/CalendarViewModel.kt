@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.sito8943.focushabit.core.data.HabitRepository
 import dev.sito8943.focushabit.core.di.DateState
+import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import java.time.LocalDate
 import java.time.YearMonth
@@ -13,7 +14,6 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 
 enum class DayAppearance { Selected, Logged, Today, Normal }
@@ -45,7 +45,11 @@ class CalendarViewModel(
 
     val state: StateFlow<CalendarUiState> = combine(
         codeStore.code.flatMapLatest { code ->
-            repository.observeLogs(code).map { logs -> logs.mapTo(HashSet()) { it.date } }
+            // Green = something done. Quit habits log relapses, so they do not count.
+            combine(repository.observeHabits(code), repository.observeLogs(code)) { habits, logs ->
+                val build = habits.filter { it.kind == HabitKind.Build }.mapTo(HashSet()) { it.id }
+                logs.filter { it.habitId in build }.mapTo(HashSet()) { it.date }
+            }
         },
         month,
         dates.selected,

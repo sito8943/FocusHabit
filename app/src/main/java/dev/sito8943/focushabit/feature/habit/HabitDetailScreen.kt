@@ -14,14 +14,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.DeleteOutline
+import androidx.compose.material3.LinearProgressIndicator
+import dev.sito8943.focushabit.core.model.HabitKind
+import dev.sito8943.focushabit.core.model.StreakUnit
+import dev.sito8943.focushabit.ui.patterns.HabitTile
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -42,6 +41,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
+import dev.sito8943.focushabit.core.icons.Fa
+import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.DotGrid
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
@@ -57,10 +58,12 @@ fun HabitDetailScreen(
     onBack: () -> Unit,
     onToggleToday: () -> Unit,
     onDelete: () -> Unit,
+    onEdit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val habit = state.habit ?: return
     val color = FocusColors.parse(habit.color)
+    val quit = habit.kind == HabitKind.Quit
     var confirmDelete by remember { mutableStateOf(false) }
 
     Column(modifier.fillMaxSize()) {
@@ -69,8 +72,10 @@ fun HabitDetailScreen(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.common_back))
+                FaIcon(Fa.Back, stringResource(R.string.common_back))
             }
+            HabitTile(habit.name, habit.icon, habit.color, size = 40.dp)
+            Spacer(Modifier.width(12.dp))
             Text(
                 habit.name,
                 modifier = Modifier.weight(1f),
@@ -80,9 +85,12 @@ fun HabitDetailScreen(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            IconButton(onClick = onEdit) {
+                FaIcon(Fa.Edit, stringResource(R.string.habit_edit))
+            }
             IconButton(onClick = { confirmDelete = true }) {
-                Icon(
-                    Icons.Outlined.DeleteOutline,
+                FaIcon(
+                    Fa.Delete,
                     stringResource(R.string.habit_delete),
                     tint = MaterialTheme.colorScheme.error,
                 )
@@ -100,7 +108,11 @@ fun HabitDetailScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     SectionLabel(stringResource(R.string.detail_momentum), Modifier.weight(1f))
                     Text(
-                        pluralStringResource(R.plurals.detail_days_completed, state.loggedDays.size, state.loggedDays.size),
+                        pluralStringResource(
+                            if (quit) R.plurals.detail_days_clean else R.plurals.detail_days_completed,
+                            state.goodDays.size,
+                            state.goodDays.size,
+                        ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -109,7 +121,7 @@ fun HabitDetailScreen(
                 DotGrid(
                     end = state.today,
                     weeks = 26,
-                    value = { if (it in state.loggedDays) 1f else 0f },
+                    value = { if (it in state.goodDays) 1f else 0f },
                     color = color,
                     dot = 9.dp,
                     gap = 3.dp,
@@ -120,23 +132,50 @@ fun HabitDetailScreen(
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 StatCard(
-                    label = stringResource(R.string.detail_streak),
-                    value = state.streak,
-                    caption = stringResource(R.string.detail_current_days),
+                    label = stringResource(if (quit) R.string.detail_clean else R.string.detail_streak),
+                    value = state.streak.current,
+                    caption = unitText(state.streak.unit),
                     modifier = Modifier.weight(1f),
                 )
                 StatCard(
                     label = stringResource(R.string.detail_best),
-                    value = state.bestStreak,
+                    value = state.streak.best,
                     caption = stringResource(R.string.detail_all_time),
                     modifier = Modifier.weight(1f),
                 )
             }
 
+            habit.goal?.let { goal ->
+                FocusCard(Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SectionLabel(stringResource(R.string.form_goal), Modifier.weight(1f))
+                        Text(
+                            if (state.goalProgress >= goal) {
+                                stringResource(R.string.goal_reached)
+                            } else {
+                                stringResource(R.string.goal_progress, state.goalProgress, goal)
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                    Spacer(Modifier.height(10.dp))
+                    LinearProgressIndicator(
+                        progress = { (state.goalProgress.toFloat() / goal).coerceIn(0f, 1f) },
+                        modifier = Modifier.fillMaxWidth().height(10.dp),
+                        color = color,
+                        trackColor = color.copy(alpha = 0.15f),
+                        strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+                        gapSize = 0.dp,
+                        drawStopIndicator = {},
+                    )
+                }
+            }
+
             FocusCard(Modifier.fillMaxWidth()) {
-                SectionLabel(stringResource(R.string.detail_weekly))
+                SectionLabel(stringResource(if (quit) R.string.detail_relapses_weekly else R.string.detail_weekly))
                 Spacer(Modifier.height(16.dp))
-                WeekdayBars(state.weekdays, color, state.today.dayOfWeek)
+                WeekdayBars(state.weekdays, if (quit) MaterialTheme.colorScheme.error else color, state.today.dayOfWeek)
             }
         }
 
@@ -144,7 +183,7 @@ fun HabitDetailScreen(
             onClick = onToggleToday,
             modifier = Modifier.fillMaxWidth().padding(16.dp).height(56.dp),
             shape = RoundedCornerShape(16.dp),
-            colors = if (state.doneToday) {
+            colors = if (state.loggedToday) {
                 ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant,
                     contentColor = MaterialTheme.colorScheme.onSurface,
@@ -156,12 +195,19 @@ fun HabitDetailScreen(
                 )
             },
         ) {
-            if (!state.doneToday) {
-                Icon(Icons.Filled.Check, null)
+            if (!state.loggedToday) {
+                FaIcon(if (quit) Fa.Close else Fa.Check, null)
                 Spacer(Modifier.width(8.dp))
             }
             Text(
-                stringResource(if (state.doneToday) R.string.detail_unmark_today else R.string.detail_mark_today),
+                stringResource(
+                    when {
+                        quit && state.loggedToday -> R.string.detail_undo_relapse
+                        quit -> R.string.detail_relapse_today
+                        state.loggedToday -> R.string.detail_unmark_today
+                        else -> R.string.detail_mark_today
+                    },
+                ),
                 style = MaterialTheme.typography.titleMedium,
             )
         }
@@ -246,3 +292,12 @@ private fun WeekdayBars(counts: Map<DayOfWeek, Int>, color: Color, today: DayOfW
     }
 }
 
+@Composable
+private fun unitText(unit: StreakUnit): String = stringResource(
+    when (unit) {
+        StreakUnit.Days -> R.string.unit_days
+        StreakUnit.Times -> R.string.unit_times
+        StreakUnit.Weeks -> R.string.unit_weeks
+        StreakUnit.Months -> R.string.unit_months
+    },
+)

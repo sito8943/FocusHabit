@@ -1,7 +1,9 @@
 package dev.sito8943.focushabit.core.data
 
 import androidx.room.withTransaction
+import dev.sito8943.focushabit.core.model.Frequency
 import dev.sito8943.focushabit.core.model.Habit
+import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.model.HabitLog
 import java.time.Instant
 import java.time.LocalDate
@@ -21,7 +23,9 @@ class HabitRepository(
     private val logs = database.logs()
 
     fun observeHabits(code: String): Flow<List<Habit>> =
-        habits.observeActive(code).map { rows -> rows.map { Habit(it.id, it.name, it.color) } }
+        habits.observeActive(code).map { rows -> rows.map { it.toModel() } }
+
+    suspend fun getHabit(id: Long): Habit? = habits.get(id)?.takeIf { it.deletedAt == null }?.toModel()
 
     fun observeLogs(code: String): Flow<List<HabitLog>> =
         logs.observeActive(code).map { rows ->
@@ -30,10 +34,39 @@ class HabitRepository(
             }
         }
 
-    suspend fun addHabit(code: String, name: String, color: String) {
-        habits.insert(
-            HabitEntity(code = code, name = name, color = color, createdAt = now().toString()),
-        )
+    /** New habit when [id] is null, otherwise an edit of that one. */
+    suspend fun saveHabit(code: String, id: Long?, draft: Habit) {
+        val (frequency, frequencyValue) =
+            (if (draft.kind == HabitKind.Quit) Frequency.Daily else draft.frequency).storage
+        if (id == null) {
+            habits.insert(
+                HabitEntity(
+                    code = code,
+                    name = draft.name,
+                    color = draft.color,
+                    createdAt = now().toString(),
+                    icon = draft.icon,
+                    kind = draft.kind.storage,
+                    frequency = frequency,
+                    frequencyValue = frequencyValue,
+                    goal = draft.goal,
+                    startDate = LocalDate.now().toString(),
+                ),
+            )
+        } else {
+            val current = habits.get(id) ?: return
+            habits.update(
+                current.copy(
+                    name = draft.name,
+                    color = draft.color,
+                    icon = draft.icon,
+                    kind = draft.kind.storage,
+                    frequency = frequency,
+                    frequencyValue = frequencyValue,
+                    goal = draft.goal,
+                ),
+            )
+        }
     }
 
     /**
@@ -64,3 +97,15 @@ class HabitRepository(
         }
     }
 }
+
+private fun HabitEntity.toModel() = Habit(
+    id = id,
+    name = name,
+    color = color,
+    icon = icon,
+    kind = HabitKind.from(kind),
+    frequency = Frequency.from(frequency, frequencyValue),
+    goal = goal,
+    startDate = runCatching { LocalDate.parse(startDate) }
+        .getOrElse { runCatching { LocalDate.parse(createdAt.take(10)) }.getOrDefault(LocalDate.MIN) },
+)

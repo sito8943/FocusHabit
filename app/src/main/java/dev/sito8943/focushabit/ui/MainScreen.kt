@@ -13,16 +13,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Key
-import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -45,14 +46,15 @@ import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.sito8943.focushabit.R
+import dev.sito8943.focushabit.core.icons.Fa
+import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.core.di.AppContainer
 import dev.sito8943.focushabit.core.sync.SyncStatus
 import dev.sito8943.focushabit.feature.calendar.CalendarScreen
+import dev.sito8943.focushabit.feature.form.HabitFormScreen
 import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
-import dev.sito8943.focushabit.ui.patterns.PillNavBar
-import dev.sito8943.focushabit.ui.patterns.PillNavItem
 import dev.sito8943.focushabit.ui.theme.Alice
 
 private enum class Tab { Today, Calendar }
@@ -63,6 +65,8 @@ fun MainScreen(container: AppContainer) {
     var tab by rememberSaveable { mutableStateOf(Tab.Today) }
     var showRecovery by rememberSaveable { mutableStateOf(false) }
     var openHabit by rememberSaveable { mutableStateOf<Long?>(null) }
+    /** Habit form: [NEW_HABIT] to create, an id to edit, null when closed. */
+    var form by rememberSaveable { mutableStateOf<Long?>(null) }
 
     val today = viewModel { container.createTodayViewModel() }
     val calendar = viewModel { container.createCalendarViewModel() }
@@ -77,8 +81,12 @@ fun MainScreen(container: AppContainer) {
 
     BackHandler(enabled = tab != Tab.Today) { tab = Tab.Today }
 
+    form?.let { target ->
+        HabitFormRoute(container, target.takeIf { it != NEW_HABIT }, onClose = { form = null })
+        return
+    }
     openHabit?.let { habitId ->
-        HabitDetailRoute(container, habitId, onClose = { openHabit = null })
+        HabitDetailRoute(container, habitId, onClose = { openHabit = null }, onEdit = { form = habitId })
         return
     }
 
@@ -105,7 +113,7 @@ fun MainScreen(container: AppContainer) {
                 actions = {
                     SyncButton(syncStatus) { container.syncCoordinator.refresh() }
                     IconButton(onClick = { showRecovery = true }) {
-                        Icon(Icons.Filled.Key, contentDescription = stringResource(R.string.recovery_open))
+                        FaIcon(Fa.Key, contentDescription = stringResource(R.string.recovery_open))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -114,14 +122,26 @@ fun MainScreen(container: AppContainer) {
             )
         },
         bottomBar = {
-            PillNavBar(
-                items = listOf(
-                    PillNavItem(Icons.Filled.CheckCircle, stringResource(R.string.tab_today)),
-                    PillNavItem(Icons.Filled.CalendarMonth, stringResource(R.string.tab_calendar)),
-                ),
-                selectedIndex = tab.ordinal,
-                onSelect = { tab = Tab.entries[it] },
-            )
+            // Same bar as SitoWallet: full-width Material 3, label under the icon,
+            // accent on the active tab. The centre is the filled "+".
+            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                TabItem(Tab.Today, tab, Fa.Today, R.string.tab_today) { tab = it }
+                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                    Surface(
+                        onClick = { form = NEW_HABIT },
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        shadowElevation = 2.dp,
+                        modifier = Modifier.size(52.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center) {
+                            FaIcon(Fa.Plus, stringResource(R.string.habit_new), Modifier.size(24.dp))
+                        }
+                    }
+                }
+                TabItem(Tab.Calendar, tab, Fa.Calendar, R.string.tab_calendar) { tab = it }
+            }
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
@@ -142,7 +162,6 @@ fun MainScreen(container: AppContainer) {
                         state = state,
                         onToggle = today::toggle,
                         onOpen = { openHabit = it },
-                        onAdd = today::addHabit,
                         onSelectDay = today::select,
                         onBackToToday = today::backToToday,
                     )
@@ -181,8 +200,45 @@ fun MainScreen(container: AppContainer) {
     }
 }
 
+private const val NEW_HABIT = -1L
+
 @Composable
-private fun HabitDetailRoute(container: AppContainer, habitId: Long, onClose: () -> Unit) {
+private fun RowScope.TabItem(target: Tab, current: Tab, icon: String, label: Int, onSelect: (Tab) -> Unit) {
+    val selected = target == current
+    NavigationBarItem(
+        selected = selected,
+        onClick = { onSelect(target) },
+        icon = { FaIcon(icon, contentDescription = null, Modifier.size(22.dp)) },
+        label = { Text(stringResource(label), style = MaterialTheme.typography.labelMedium) },
+        colors = NavigationBarItemDefaults.colors(
+            selectedIconColor = MaterialTheme.colorScheme.tertiary,
+            selectedTextColor = MaterialTheme.colorScheme.tertiary,
+            unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            indicatorColor = MaterialTheme.colorScheme.tertiaryContainer,
+        ),
+    )
+}
+
+@Composable
+private fun HabitFormRoute(container: AppContainer, habitId: Long?, onClose: () -> Unit) {
+    val vm = viewModel(key = "form-${habitId ?: "new"}") { container.createHabitFormViewModel(habitId) }
+    val state by vm.state.collectAsStateWithLifecycle()
+    BackHandler(onBack = onClose)
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        HabitFormScreen(
+            state = state,
+            isEdit = vm.isEdit,
+            onChange = vm::update,
+            onSave = { vm.save(onClose) },
+            onClose = onClose,
+            modifier = Modifier.safeDrawingPadding().imePadding(),
+        )
+    }
+}
+
+@Composable
+private fun HabitDetailRoute(container: AppContainer, habitId: Long, onClose: () -> Unit, onEdit: () -> Unit) {
     val detail = viewModel(key = "habit-$habitId") { container.createHabitDetailViewModel(habitId) }
     val state by detail.state.collectAsStateWithLifecycle()
     BackHandler(onBack = onClose)
@@ -196,6 +252,7 @@ private fun HabitDetailRoute(container: AppContainer, habitId: Long, onClose: ()
             onBack = onClose,
             onToggleToday = detail::toggleToday,
             onDelete = { detail.delete(onClose) },
+            onEdit = onEdit,
             modifier = Modifier.safeDrawingPadding(),
         )
     }
@@ -208,7 +265,7 @@ private fun SyncButton(status: SyncStatus, onClick: () -> Unit) {
         if (status == SyncStatus.Syncing) {
             CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
         } else {
-            Icon(Icons.Filled.Sync, contentDescription = stringResource(R.string.sync_now))
+            FaIcon(Fa.Sync, contentDescription = stringResource(R.string.sync_now))
         }
     }
 }

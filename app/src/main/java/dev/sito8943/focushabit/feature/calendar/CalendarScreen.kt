@@ -14,10 +14,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -30,6 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.sito8943.focushabit.R
+import dev.sito8943.focushabit.core.icons.Fa
+import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.theme.Alice
@@ -59,8 +57,8 @@ fun CalendarScreen(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onPrevious) {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                FaIcon(
+                    Fa.ChevronLeft,
                     contentDescription = stringResource(R.string.calendar_previous_month),
                 )
             }
@@ -74,8 +72,8 @@ fun CalendarScreen(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
             IconButton(onClick = onNext) {
-                Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                FaIcon(
+                    Fa.ChevronRight,
                     contentDescription = stringResource(R.string.calendar_next_month),
                 )
             }

@@ -90,6 +90,7 @@ class SyncEngine(
                         name = dto.name,
                         color = dto.color,
                         createdAt = dto.createdAt,
+                        startDate = dto.createdAt.take(10),
                     ),
                 )
 

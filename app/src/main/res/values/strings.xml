@@ -7,12 +7,10 @@
 
     <string name="today_summary">%1$d/%2$d done</string>
     <string name="today_back_to_today">Back to today</string>
-    <string name="today_empty">No habits yet. Add one below!</string>
+    <string name="today_empty">No habits yet. Tap + to add one.</string>
     <string name="habit_delete">Delete habit</string>
     <string name="habit_delete_title">Delete \"%1$s\"?</string>
     <string name="habit_delete_message">Its history will be deleted too.</string>
-    <string name="habit_new_placeholder">New habit…</string>
-    <string name="habit_add">Add</string>
     <string name="habit_select_color">Select color %1$s</string>
 
     <string name="calendar_previous_month">Previous month</string>
@@ -61,7 +59,6 @@
         <item quantity="other">%1$d days completed</item>
     </plurals>
     <string name="detail_streak">Streak</string>
-    <string name="detail_current_days">Current days</string>
     <string name="detail_best">Best streak</string>
     <string name="detail_all_time">All-time record</string>
     <string name="detail_weekly">Weekly activity · 12 weeks</string>
@@ -73,4 +70,71 @@
     <string name="greeting_evening">Good evening</string>
     <string name="celebrate_title">Good job!</string>
     <string name="celebrate_message">Every habit done today.</string>
+    <string name="today_nothing_due">Nothing due this day.</string>
+    <string name="today_others">Other days</string>
+    <string name="goal_reached">Goal reached 🎉</string>
+    <string name="goal_progress">%1$d/%2$d</string>
+    <string name="period_this_week">%1$d/%2$d this week</string>
+    <string name="period_this_month">%1$d/%2$d this month</string>
+    <string name="quit_state_clean">Clean</string>
+    <string name="quit_state_relapsed">Relapsed</string>
+    <string name="habit_new">New habit</string>
+    <string name="habit_edit">Edit habit</string>
+    <string name="form_title_new">New habit</string>
+    <string name="form_title_edit">Edit habit</string>
+    <string name="form_save">Save</string>
+    <string name="form_name">Name</string>
+    <string name="form_name_placeholder">e.g. Read 20 minutes</string>
+    <string name="form_kind">Type</string>
+    <string name="kind_build">Do</string>
+    <string name="kind_quit">Quit</string>
+    <string name="kind_build_hint">Something you want to do. Mark it when you do it.</string>
+    <string name="kind_quit_hint">Something you want to stop. Every day counts as clean unless you mark a relapse.</string>
+    <string name="form_icon">Icon</string>
+    <string name="form_icon_search">Search icons (water, read, run…)</string>
+    <string name="form_icon_none_found">No icons found.</string>
+    <string name="form_icon_initial">No icon, use the initial</string>
+    <string name="form_icon_credit">Icons: Font Awesome Free (CC BY 4.0)</string>
+    <string name="form_color">Color</string>
+    <string name="form_frequency">Frequency</string>
+    <string name="freq_daily">Every day</string>
+    <string name="freq_weekdays">Some days</string>
+    <string name="freq_every_n_days">Every N days</string>
+    <string name="freq_per_week">Per week</string>
+    <string name="freq_per_month">Per month</string>
+    <string name="freq_every_n_days_label">days between</string>
+    <string name="freq_per_week_label">times a week</string>
+    <string name="freq_per_month_label">times a month</string>
+    <string name="form_goal">Goal</string>
+    <string name="form_goal_hint">Optional target to reach.</string>
+    <string name="goal_build_label">times in total</string>
+    <string name="goal_quit_label">days in a row without it</string>
+    <string name="detail_clean">Clean</string>
+    <string name="detail_relapses_weekly">Relapses by weekday · 12 weeks</string>
+    <string name="detail_relapse_today">I relapsed today</string>
+    <string name="detail_undo_relapse">Undo today’s relapse</string>
+    <string name="unit_days">Days</string>
+    <string name="unit_times">Times in a row</string>
+    <string name="unit_weeks">Weeks</string>
+    <string name="unit_months">Months</string>
+    <plurals name="quit_clean_days">
+        <item quantity="one">%1$d day clean</item>
+        <item quantity="other">%1$d days clean</item>
+    </plurals>
+    <plurals name="habit_streak_times">
+        <item quantity="one">%1$d time in a row</item>
+        <item quantity="other">%1$d times in a row</item>
+    </plurals>
+    <plurals name="habit_streak_weeks">
+        <item quantity="one">%1$d-week streak</item>
+        <item quantity="other">%1$d-week streak</item>
+    </plurals>
+    <plurals name="habit_streak_months">
+        <item quantity="one">%1$d-month streak</item>
+        <item quantity="other">%1$d-month streak</item>
+    </plurals>
+    <plurals name="detail_days_clean">
+        <item quantity="one">%1$d clean day</item>
+        <item quantity="other">%1$d clean days</item>
+    </plurals>
 </resources>

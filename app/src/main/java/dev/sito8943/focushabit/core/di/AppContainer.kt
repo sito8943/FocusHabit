@@ -10,6 +10,7 @@ import dev.sito8943.focushabit.core.sync.HabitApi
 import dev.sito8943.focushabit.core.sync.SyncCoordinator
 import dev.sito8943.focushabit.core.sync.SyncEngine
 import dev.sito8943.focushabit.feature.calendar.CalendarViewModel
+import dev.sito8943.focushabit.feature.form.HabitFormViewModel
 import dev.sito8943.focushabit.feature.habit.HabitDetailViewModel
 import dev.sito8943.focushabit.feature.recovery.RecoveryViewModel
 import dev.sito8943.focushabit.feature.today.TodayViewModel
@@ -79,6 +80,8 @@ class AppContainer(context: Context) {
 
     fun createHabitDetailViewModel(habitId: Long) =
         HabitDetailViewModel(habitId, repository, codeStore, dates)
+
+    fun createHabitFormViewModel(habitId: Long?) = HabitFormViewModel(habitId, repository, codeStore)
 
     fun createRecoveryViewModel() = RecoveryViewModel(codeStore, syncCoordinator)
 }
