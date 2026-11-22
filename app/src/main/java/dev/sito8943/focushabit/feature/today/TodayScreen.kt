@@ -38,6 +38,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -60,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.model.HabitColors
+import dev.sito8943.focushabit.ui.patterns.Celebration
 import dev.sito8943.focushabit.ui.patterns.DotGrid
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.ProgressRing
@@ -67,6 +69,7 @@ import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.theme.Alice
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 import java.time.format.TextStyle
@@ -83,7 +86,22 @@ fun TodayScreen(
     onBackToToday: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier.fillMaxSize()) {
+    // Celebrate the moment the last habit of today gets checked, not on opening
+    // a day that was already complete.
+    var celebrate by remember { mutableStateOf(false) }
+    var previous by remember { mutableStateOf<Pair<LocalDate, Boolean>?>(null) }
+    val allDone = state.habits.isNotEmpty() && state.doneCount == state.habits.size
+    LaunchedEffect(state.loading, state.date, allDone) {
+        if (state.loading) return@LaunchedEffect
+        val before = previous
+        if (before != null && before.first == state.date && !before.second && allDone && state.isToday) {
+            celebrate = true
+        }
+        previous = state.date to allDone
+    }
+
+    Box(modifier.fillMaxSize()) {
+    Column(Modifier.fillMaxSize()) {
         LazyColumn(
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(bottom = 16.dp),
@@ -120,6 +138,13 @@ fun TodayScreen(
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         HabitForm(onAdd)
     }
+    Celebration(
+        visible = celebrate,
+        title = stringResource(R.string.celebrate_title),
+        message = stringResource(R.string.celebrate_message),
+        onFinished = { celebrate = false },
+    )
+    }
 }
 
 @Composable
@@ -133,7 +158,7 @@ private fun DayHeader(state: TodayUiState, onBackToToday: () -> Unit) {
             SectionLabel(state.date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", locale)))
             Text(
                 text = when (state.date) {
-                    state.today -> stringResource(R.string.day_today)
+                    state.today -> stringResource(greeting(LocalTime.now().hour))
                     state.today.minusDays(1) -> stringResource(R.string.day_yesterday)
                     state.today.plusDays(1) -> stringResource(R.string.day_tomorrow)
                     else -> state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
@@ -149,6 +174,12 @@ private fun DayHeader(state: TodayUiState, onBackToToday: () -> Unit) {
             TextButton(onClick = onBackToToday) { Text(stringResource(R.string.today_back_to_today)) }
         }
     }
+}
+
+private fun greeting(hour: Int): Int = when (hour) {
+    in 5..11 -> R.string.greeting_morning
+    in 12..19 -> R.string.greeting_afternoon
+    else -> R.string.greeting_evening
 }
 
 private const val PAST_DAYS = 59L

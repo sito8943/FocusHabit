@@ -30,6 +30,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import dev.sito8943.focushabit.R
+import dev.sito8943.focushabit.ui.patterns.FocusCard
+import dev.sito8943.focushabit.ui.patterns.SectionLabel
+import dev.sito8943.focushabit.ui.theme.Alice
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -63,8 +68,9 @@ fun CalendarScreen(
                 text = "${state.month.month.getDisplayName(TextStyle.FULL_STANDALONE, locale)} ${state.month.year}"
                     .replaceFirstChar { it.titlecase(locale) },
                 modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.SemiBold,
+                fontFamily = Alice,
+                fontSize = 30.sp,
+                color = MaterialTheme.colorScheme.tertiary,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
             )
             IconButton(onClick = onNext) {
@@ -75,16 +81,14 @@ fun CalendarScreen(
             }
         }
 
+        FocusCard(Modifier.fillMaxWidth()) {
         // Sunday first, like the web.
         val weekStart = DayOfWeek.SUNDAY
-        Row(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
             (0L until 7L).forEach { offset ->
-                Text(
-                    text = weekStart.plus(offset).getDisplayName(TextStyle.SHORT_STANDALONE, locale),
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                SectionLabel(
+                    text = weekStart.plus(offset).getDisplayName(TextStyle.NARROW_STANDALONE, locale),
+                    modifier = Modifier.weight(1f).wrapContentWidth(Alignment.CenterHorizontally),
                 )
             }
         }
@@ -107,8 +111,9 @@ fun CalendarScreen(
                 }
             }
         }
+        }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+        Row(Modifier.padding(start = 4.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             LegendItem(MaterialTheme.colorScheme.tertiary, stringResource(R.string.calendar_legend_selected))
             LegendItem(FocusColors.Logged, stringResource(R.string.calendar_legend_logged))
             LegendItem(FocusColors.Today, stringResource(R.string.calendar_legend_today))
@@ -135,7 +140,7 @@ private fun DayCell(day: LocalDate, appearance: DayAppearance, onClick: () -> Un
     Surface(
         onClick = onClick,
         modifier = Modifier.fillMaxSize(),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(12.dp),
         color = container,
         contentColor = content,
         border = border?.let { BorderStroke(if (appearance == DayAppearance.Today) 2.dp else 1.dp, it) },

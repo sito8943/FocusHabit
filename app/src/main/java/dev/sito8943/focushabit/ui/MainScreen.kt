@@ -23,8 +23,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,6 +51,8 @@ import dev.sito8943.focushabit.feature.calendar.CalendarScreen
 import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
+import dev.sito8943.focushabit.ui.patterns.PillNavBar
+import dev.sito8943.focushabit.ui.patterns.PillNavItem
 import dev.sito8943.focushabit.ui.theme.Alice
 
 private enum class Tab { Today, Calendar }
@@ -114,20 +114,14 @@ fun MainScreen(container: AppContainer) {
             )
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    selected = tab == Tab.Today,
-                    onClick = { tab = Tab.Today },
-                    icon = { Icon(Icons.Filled.CheckCircle, contentDescription = null) },
-                    label = { Text(stringResource(R.string.tab_today)) },
-                )
-                NavigationBarItem(
-                    selected = tab == Tab.Calendar,
-                    onClick = { tab = Tab.Calendar },
-                    icon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) },
-                    label = { Text(stringResource(R.string.tab_calendar)) },
-                )
-            }
+            PillNavBar(
+                items = listOf(
+                    PillNavItem(Icons.Filled.CheckCircle, stringResource(R.string.tab_today)),
+                    PillNavItem(Icons.Filled.CalendarMonth, stringResource(R.string.tab_calendar)),
+                ),
+                selectedIndex = tab.ordinal,
+                onSelect = { tab = Tab.entries[it] },
+            )
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
