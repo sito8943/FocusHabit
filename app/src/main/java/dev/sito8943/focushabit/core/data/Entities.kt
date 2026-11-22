@@ -1,0 +1,71 @@
+package dev.sito8943.focushabit.core.data
+
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.ForeignKey
+import androidx.room.Index
+import androidx.room.PrimaryKey
+
+/**
+ * A habit as stored on this phone. Room is the local source of truth; the
+ * server row is addressed only through [remoteId] (the local [id] never
+ * matches the backend one).
+ *
+ * Deletion is logical ([deletedAt]) while the row exists on the server: the
+ * soft delete still has to be pushed. A row that never reached the server is
+ * deleted for real.
+ */
+@Entity(
+    tableName = "habits",
+    indices = [
+        Index(value = ["remote_id"], unique = true),
+        Index(value = ["code"]),
+    ],
+)
+data class HabitEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    @ColumnInfo(name = "remote_id")
+    val remoteId: Long? = null,
+    /** Recovery code the habit belongs to. */
+    val code: String,
+    val name: String,
+    val color: String,
+    /** ISO-8601 instant. Local time until the server returns its own. Orders the list. */
+    @ColumnInfo(name = "created_at")
+    val createdAt: String,
+    @ColumnInfo(name = "deleted_at")
+    val deletedAt: String? = null,
+)
+
+/**
+ * One day marked as done. [logDate] is `YYYY-MM-DD`, the same plain date
+ * string the server stores.
+ */
+@Entity(
+    tableName = "habit_logs",
+    foreignKeys = [
+        ForeignKey(
+            entity = HabitEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["habit_id"],
+            onDelete = ForeignKey.CASCADE,
+        ),
+    ],
+    indices = [
+        Index(value = ["remote_id"], unique = true),
+        Index(value = ["habit_id", "log_date"]),
+    ],
+)
+data class HabitLogEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    @ColumnInfo(name = "remote_id")
+    val remoteId: Long? = null,
+    @ColumnInfo(name = "habit_id")
+    val habitId: Long,
+    @ColumnInfo(name = "log_date")
+    val logDate: String,
+    @ColumnInfo(name = "deleted_at")
+    val deletedAt: String? = null,
+)

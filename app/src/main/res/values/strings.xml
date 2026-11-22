@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Focus Habit</string>
+
+    <string name="tab_today">Today</string>
+    <string name="tab_calendar">Calendar</string>
+
+    <string name="today_summary">%1$d/%2$d done</string>
+    <string name="today_back_to_today">Back to today</string>
+    <string name="today_empty">No habits yet. Add one below!</string>
+    <string name="today_streak">%1$dd</string>
+    <string name="today_streak_description">Current streak: %1$d days</string>
+    <string name="habit_delete">Delete habit</string>
+    <string name="habit_delete_title">Delete \"%1$s\"?</string>
+    <string name="habit_delete_message">Its history will be deleted too.</string>
+    <string name="habit_new_placeholder">New habit…</string>
+    <string name="habit_add">Add</string>
+    <string name="habit_select_color">Select color %1$s</string>
+
+    <string name="calendar_previous_month">Previous month</string>
+    <string name="calendar_next_month">Next month</string>
+    <string name="calendar_legend_selected">Selected</string>
+    <string name="calendar_legend_logged">Logged</string>
+    <string name="calendar_legend_today">Today</string>
+
+    <string name="recovery_open">Open recovery code</string>
+    <string name="recovery_title">Recovery code</string>
+    <string name="recovery_description">Save this code. Use it on another device to recover and sync your habits.</string>
+    <string name="recovery_copy">Copy code</string>
+    <string name="recovery_copied">Code copied</string>
+    <string name="recovery_have_code">Already have a code</string>
+    <string name="recovery_restore_label">Restore with code</string>
+    <string name="recovery_use_code">Use code</string>
+    <string name="recovery_show_mine">Show my code</string>
+    <string name="recovery_invalid">Use a valid 4-character code (letters and numbers).</string>
+    <string name="recovery_applied">Recovery code applied. Your habits and logs were loaded successfully.</string>
+    <string name="recovery_failed">Could not load data for this code: %1$s</string>
+    <string name="recovery_offline">No connection. Connect to the internet to restore a code.</string>
+
+    <string name="sync_now">Sync now</string>
+    <string name="sync_offline">Offline. Changes are saved on this phone and will sync later.</string>
+    <string name="sync_failed">Could not sync: %1$s. Changes are saved on this phone.</string>
+    <string name="sync_not_configured">Sync is not configured in this build. Changes are saved on this phone.</string>
+
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_close">Close</string>
+</resources>

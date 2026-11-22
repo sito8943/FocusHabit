@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="tab_today">Hoy</string>
+    <string name="tab_calendar">Calendario</string>
+
+    <string name="today_summary">%1$d/%2$d hechos</string>
+    <string name="today_back_to_today">Volver a hoy</string>
+    <string name="today_empty">Aún no hay hábitos. ¡Añade uno abajo!</string>
+    <string name="today_streak">%1$dd</string>
+    <string name="today_streak_description">Racha actual: %1$d días</string>
+    <string name="habit_delete">Borrar hábito</string>
+    <string name="habit_delete_title">¿Borrar \"%1$s\"?</string>
+    <string name="habit_delete_message">También se borrará su historial.</string>
+    <string name="habit_new_placeholder">Nuevo hábito…</string>
+    <string name="habit_add">Añadir</string>
+    <string name="habit_select_color">Elegir color %1$s</string>
+
+    <string name="calendar_previous_month">Mes anterior</string>
+    <string name="calendar_next_month">Mes siguiente</string>
+    <string name="calendar_legend_selected">Elegido</string>
+    <string name="calendar_legend_logged">Hecho</string>
+    <string name="calendar_legend_today">Hoy</string>
+
+    <string name="recovery_open">Abrir código de recuperación</string>
+    <string name="recovery_title">Código de recuperación</string>
+    <string name="recovery_description">Guarda este código. Úsalo en otro dispositivo para recuperar y sincronizar tus hábitos.</string>
+    <string name="recovery_copy">Copiar código</string>
+    <string name="recovery_copied">Código copiado</string>
+    <string name="recovery_have_code">Ya tengo un código</string>
+    <string name="recovery_restore_label">Restaurar con código</string>
+    <string name="recovery_use_code">Usar código</string>
+    <string name="recovery_show_mine">Ver mi código</string>
+    <string name="recovery_invalid">Usa un código válido de 4 caracteres (letras y números).</string>
+    <string name="recovery_applied">Código aplicado. Se cargaron tus hábitos y registros.</string>
+    <string name="recovery_failed">No se pudieron cargar los datos de este código: %1$s</string>
+    <string name="recovery_offline">Sin conexión. Conéctate a internet para restaurar un código.</string>
+
+    <string name="sync_now">Sincronizar ahora</string>
+    <string name="sync_offline">Sin conexión. Los cambios se guardan en el móvil y se sincronizarán después.</string>
+    <string name="sync_failed">No se pudo sincronizar: %1$s. Los cambios se guardan en el móvil.</string>
+    <string name="sync_not_configured">La sincronización no está configurada en esta versión. Los cambios se guardan en el móvil.</string>
+
+    <string name="common_cancel">Cancelar</string>
+    <string name="common_delete">Borrar</string>
+    <string name="common_close">Cerrar</string>
+</resources>

@@ -1,0 +1,199 @@
+package dev.sito8943.focushabit.ui
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material.icons.filled.Sync
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LifecycleResumeEffect
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import dev.sito8943.focushabit.R
+import dev.sito8943.focushabit.core.di.AppContainer
+import dev.sito8943.focushabit.core.sync.SyncStatus
+import dev.sito8943.focushabit.feature.calendar.CalendarScreen
+import dev.sito8943.focushabit.feature.recovery.RecoverySheet
+import dev.sito8943.focushabit.feature.today.TodayScreen
+import dev.sito8943.focushabit.ui.theme.FocusColors
+
+private enum class Tab { Today, Calendar }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainScreen(container: AppContainer) {
+    var tab by rememberSaveable { mutableStateOf(Tab.Today) }
+    var showRecovery by rememberSaveable { mutableStateOf(false) }
+
+    val today = viewModel { container.createTodayViewModel() }
+    val calendar = viewModel { container.createCalendarViewModel() }
+    val recovery = viewModel { container.createRecoveryViewModel() }
+    val syncStatus by container.syncCoordinator.status.collectAsStateWithLifecycle()
+
+    LifecycleResumeEffect(Unit) {
+        container.dates.onResume()
+        container.syncCoordinator.refresh()
+        onPauseOrDispose { }
+    }
+
+    BackHandler(enabled = tab != Tab.Today) { tab = Tab.Today }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Image(
+                            painter = painterResource(R.drawable.ic_logo),
+                            contentDescription = null,
+                            modifier = Modifier.size(26.dp),
+                        )
+                        Spacer(Modifier.width(12.dp))
+                        // The web uses Alice; a system serif keeps the look without bundling a font.
+                        Text(stringResource(R.string.app_name), fontFamily = FontFamily.Serif, fontSize = 26.sp)
+                    }
+                },
+                actions = {
+                    SyncButton(syncStatus) { container.syncCoordinator.refresh() }
+                    IconButton(onClick = { showRecovery = true }) {
+                        Icon(Icons.Filled.Key, contentDescription = stringResource(R.string.recovery_open))
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                ),
+            )
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    selected = tab == Tab.Today,
+                    onClick = { tab = Tab.Today },
+                    icon = { Icon(Icons.Filled.CheckCircle, contentDescription = null) },
+                    label = { Text(stringResource(R.string.tab_today)) },
+                )
+                NavigationBarItem(
+                    selected = tab == Tab.Calendar,
+                    onClick = { tab = Tab.Calendar },
+                    icon = { Icon(Icons.Filled.CalendarMonth, contentDescription = null) },
+                    label = { Text(stringResource(R.string.tab_calendar)) },
+                )
+            }
+        },
+        containerColor = MaterialTheme.colorScheme.background,
+    ) { padding ->
+        androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().padding(padding)) {
+            SyncBanner(syncStatus)
+            when (tab) {
+                Tab.Today -> {
+                    val state by today.state.collectAsStateWithLifecycle()
+                    TodayScreen(
+                        state = state,
+                        onToggle = today::toggle,
+                        onDelete = today::delete,
+                        onAdd = today::addHabit,
+                        onShiftDay = today::shiftDay,
+                        onBackToToday = today::backToToday,
+                    )
+                }
+
+                Tab.Calendar -> {
+                    val state by calendar.state.collectAsStateWithLifecycle()
+                    CalendarScreen(
+                        state = state,
+                        onPrevious = calendar::previousMonth,
+                        onNext = calendar::nextMonth,
+                        onSelect = { day ->
+                            calendar.select(day)
+                            tab = Tab.Today
+                        },
+                    )
+                }
+            }
+        }
+    }
+
+    if (showRecovery) {
+        val code by recovery.code.collectAsStateWithLifecycle()
+        val state by recovery.state.collectAsStateWithLifecycle()
+        RecoverySheet(
+            code = code,
+            state = state,
+            onInput = recovery::onInput,
+            onApply = recovery::apply,
+            onShowRestore = recovery::showRestore,
+            onDismiss = {
+                showRecovery = false
+                recovery.reset()
+            },
+        )
+    }
+}
+
+@Composable
+private fun SyncButton(status: SyncStatus, onClick: () -> Unit) {
+    if (status == SyncStatus.NotConfigured) return
+    IconButton(onClick = onClick, enabled = status != SyncStatus.Syncing) {
+        if (status == SyncStatus.Syncing) {
+            CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
+        } else {
+            Icon(Icons.Filled.Sync, contentDescription = stringResource(R.string.sync_now))
+        }
+    }
+}
+
+/** Only when something is wrong. Offline is not an error: changes stay on the phone. */
+@Composable
+private fun SyncBanner(status: SyncStatus) {
+    val text = when (status) {
+        is SyncStatus.Failed ->
+            if (status.offline) stringResource(R.string.sync_offline)
+            else stringResource(R.string.sync_failed, status.message)
+        SyncStatus.NotConfigured -> stringResource(R.string.sync_not_configured)
+        else -> return
+    }
+    val offline = status is SyncStatus.Failed && status.offline
+    Surface(
+        color = if (offline) MaterialTheme.colorScheme.surfaceVariant else FocusColors.Warning,
+        contentColor = if (offline) MaterialTheme.colorScheme.onSurfaceVariant else FocusColors.OnWarning,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+}
