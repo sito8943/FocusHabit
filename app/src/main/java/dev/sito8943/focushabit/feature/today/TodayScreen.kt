@@ -217,7 +217,7 @@ private fun HabitItem(
                     Icon(
                         Icons.Filled.LocalFireDepartment,
                         contentDescription = null,
-                        tint = FocusColors.Warning,
+                        tint = FocusColors.Today,
                         modifier = Modifier.size(16.dp),
                     )
                     Text(

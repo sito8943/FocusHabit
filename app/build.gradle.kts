@@ -18,6 +18,10 @@ fun loadProperties(name: String) = Properties().apply {
  */
 val localProperties = loadProperties("local.properties")
 
+/** `-PlocalOnly=true`: build without Supabase, everything stays on the phone. */
+val localOnly = providers.gradleProperty("localOnly").orNull == "true"
+fun supabase(key: String) = if (localOnly) "" else localProperties.getProperty(key, "")
+
 /**
  * Release signing material, outside the repo (`keystore.properties` + `.jks` are
  * gitignored). Without it the release APK is built unsigned rather than signed
@@ -41,12 +45,12 @@ android {
         buildConfigField(
             "String",
             "SUPABASE_URL",
-            localProperties.getProperty("supabase.url", "").asBuildConfigString(),
+            supabase("supabase.url").asBuildConfigString(),
         )
         buildConfigField(
             "String",
             "SUPABASE_ANON_KEY",
-            localProperties.getProperty("supabase.anonKey", "").asBuildConfigString(),
+            supabase("supabase.anonKey").asBuildConfigString(),
         )
     }
 

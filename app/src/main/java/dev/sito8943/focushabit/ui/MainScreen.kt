@@ -2,7 +2,10 @@ package dev.sito8943.focushabit.ui
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -35,7 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.LifecycleResumeEffect
@@ -47,7 +50,7 @@ import dev.sito8943.focushabit.core.sync.SyncStatus
 import dev.sito8943.focushabit.feature.calendar.CalendarScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
-import dev.sito8943.focushabit.ui.theme.FocusColors
+import dev.sito8943.focushabit.ui.theme.Alice
 
 private enum class Tab { Today, Calendar }
 
@@ -79,10 +82,15 @@ fun MainScreen(container: AppContainer) {
                             painter = painterResource(R.drawable.ic_logo),
                             contentDescription = null,
                             modifier = Modifier.size(26.dp),
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.tertiary),
                         )
                         Spacer(Modifier.width(12.dp))
-                        // The web uses Alice; a system serif keeps the look without bundling a font.
-                        Text(stringResource(R.string.app_name), fontFamily = FontFamily.Serif, fontSize = 26.sp)
+                        Text(
+                            stringResource(R.string.app_name),
+                            fontFamily = Alice,
+                            fontSize = 28.sp,
+                            color = MaterialTheme.colorScheme.tertiary,
+                        )
                     }
                 },
                 actions = {
@@ -114,7 +122,15 @@ fun MainScreen(container: AppContainer) {
         },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
-        androidx.compose.foundation.layout.Column(Modifier.fillMaxSize().padding(padding)) {
+        // The bottom bar's inset is already in `padding`; the keyboard is not:
+        // without imePadding the add form stays hidden under it (edge-to-edge).
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+                .consumeWindowInsets(padding)
+                .imePadding(),
+        ) {
             SyncBanner(syncStatus)
             when (tab) {
                 Tab.Today -> {
@@ -184,10 +200,11 @@ private fun SyncBanner(status: SyncStatus) {
         SyncStatus.NotConfigured -> stringResource(R.string.sync_not_configured)
         else -> return
     }
-    val offline = status is SyncStatus.Failed && status.offline
+    // Informational, not an error: data is safe on the phone.
+    val offline = status == SyncStatus.NotConfigured || (status is SyncStatus.Failed && status.offline)
     Surface(
-        color = if (offline) MaterialTheme.colorScheme.surfaceVariant else FocusColors.Warning,
-        contentColor = if (offline) MaterialTheme.colorScheme.onSurfaceVariant else FocusColors.OnWarning,
+        color = if (offline) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = if (offline) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSecondaryContainer,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(

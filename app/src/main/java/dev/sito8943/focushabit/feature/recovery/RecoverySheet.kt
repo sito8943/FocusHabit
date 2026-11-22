@@ -40,7 +40,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
-import dev.sito8943.focushabit.ui.theme.FocusColors
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,8 +142,8 @@ private fun Notice(message: RecoveryMessage) {
     }
     Surface(
         shape = RoundedCornerShape(6.dp),
-        color = if (success) FocusColors.Success else FocusColors.Error,
-        contentColor = FocusColors.OnStatus,
+        color = if (success) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+        contentColor = if (success) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onError,
         modifier = Modifier.fillMaxWidth(),
     ) {
         Text(text, modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp), style = MaterialTheme.typography.bodyMedium)

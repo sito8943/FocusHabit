@@ -109,9 +109,9 @@ fun CalendarScreen(
         }
 
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-            LegendItem(FocusColors.Info, stringResource(R.string.calendar_legend_selected))
-            LegendItem(FocusColors.Success, stringResource(R.string.calendar_legend_logged))
-            LegendItem(FocusColors.Warning, stringResource(R.string.calendar_legend_today))
+            LegendItem(MaterialTheme.colorScheme.tertiary, stringResource(R.string.calendar_legend_selected))
+            LegendItem(FocusColors.Logged, stringResource(R.string.calendar_legend_logged))
+            LegendItem(FocusColors.Today, stringResource(R.string.calendar_legend_today))
         }
     }
 }
@@ -119,9 +119,13 @@ fun CalendarScreen(
 @Composable
 private fun DayCell(day: LocalDate, appearance: DayAppearance, onClick: () -> Unit) {
     val (container, content, border) = when (appearance) {
-        DayAppearance.Selected -> Triple(FocusColors.Info, FocusColors.OnStatus, null)
-        DayAppearance.Logged -> Triple(FocusColors.Success, FocusColors.OnStatus, null)
-        DayAppearance.Today -> Triple(Color.Transparent, FocusColors.Warning, FocusColors.Warning)
+        DayAppearance.Selected -> Triple(
+            MaterialTheme.colorScheme.tertiary,
+            MaterialTheme.colorScheme.onTertiary,
+            null,
+        )
+        DayAppearance.Logged -> Triple(FocusColors.Logged, FocusColors.OnStatus, null)
+        DayAppearance.Today -> Triple(Color.Transparent, FocusColors.Today, FocusColors.Today)
         DayAppearance.Normal -> Triple(
             Color.Transparent,
             MaterialTheme.colorScheme.onSurface,
