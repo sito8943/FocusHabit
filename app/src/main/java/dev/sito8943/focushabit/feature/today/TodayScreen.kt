@@ -34,7 +34,8 @@ import dev.sito8943.focushabit.ui.patterns.HabitTile
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -186,7 +187,19 @@ private fun DayHeader(state: TodayUiState, onBackToToday: () -> Unit) {
             )
         }
         if (!state.isToday) {
-            TextButton(onClick = onBackToToday) { Text(stringResource(R.string.today_back_to_today)) }
+            // A real button (tonal pill with icon), not loose text: it is the way back.
+            FilledTonalButton(
+                onClick = onBackToToday,
+                colors = ButtonDefaults.filledTonalButtonColors(
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                ),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+            ) {
+                FaIcon(Fa.BackToToday, contentDescription = null, Modifier.size(16.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.today_back_to_today), style = MaterialTheme.typography.labelLarge)
+            }
         }
     }
 }

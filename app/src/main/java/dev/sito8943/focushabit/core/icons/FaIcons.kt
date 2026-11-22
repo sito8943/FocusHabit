@@ -122,6 +122,7 @@ object Fa {
     const val Today = "circle-check"
     const val Key = "key"
     const val Sync = "arrows-rotate"
+    const val BackToToday = "rotate-left"
 }
 
 /**

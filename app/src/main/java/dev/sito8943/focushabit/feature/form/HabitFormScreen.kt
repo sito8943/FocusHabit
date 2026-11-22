@@ -143,8 +143,6 @@ fun HabitFormScreen(
                 )
             }
 
-            IconPicker(state.icon, state.color) { icon -> onChange { it.copy(icon = icon) } }
-
             FocusCard(Modifier.fillMaxWidth()) {
                 SectionLabel(stringResource(R.string.form_color))
                 Spacer(Modifier.height(6.dp))
@@ -154,6 +152,8 @@ fun HabitFormScreen(
                     }
                 }
             }
+
+            IconPicker(state.icon, state.color) { icon -> onChange { it.copy(icon = icon) } }
 
             AnimatedVisibility(state.kind == HabitKind.Build) {
                 FrequencyCard(state, onChange)
