@@ -18,7 +18,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.IconButton
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -126,7 +125,7 @@ fun MainScreen(container: AppContainer) {
             // accent on the active tab. The centre is the filled "+".
             NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                 TabItem(Tab.Today, tab, Fa.Today, R.string.tab_today) { tab = it }
-                Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
+                Box(Modifier.weight(1f).align(Alignment.CenterVertically), contentAlignment = Alignment.Center) {
                     Surface(
                         onClick = { form = NEW_HABIT },
                         shape = CircleShape,
