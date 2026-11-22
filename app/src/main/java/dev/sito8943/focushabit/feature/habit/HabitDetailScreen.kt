@@ -46,7 +46,7 @@ import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.DotGrid
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
-import dev.sito8943.focushabit.ui.theme.Bebas
+import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
 import java.time.format.TextStyle
@@ -76,10 +76,9 @@ fun HabitDetailScreen(
             }
             HabitTile(habit.name, habit.icon, habit.color, size = 40.dp)
             Spacer(Modifier.width(12.dp))
-            Text(
+            TitleText(
                 habit.name,
                 modifier = Modifier.weight(1f),
-                fontFamily = Bebas,
                 fontSize = 30.sp,
                 color = MaterialTheme.colorScheme.tertiary,
                 maxLines = 1,

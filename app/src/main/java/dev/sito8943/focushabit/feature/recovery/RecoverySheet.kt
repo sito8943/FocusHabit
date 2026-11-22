@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
-import dev.sito8943.focushabit.ui.theme.Bebas
+import dev.sito8943.focushabit.ui.patterns.TitleText
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -60,9 +60,8 @@ fun RecoverySheet(
             modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Text(
+            TitleText(
                 stringResource(R.string.recovery_title),
-                fontFamily = Bebas,
                 fontSize = 30.sp,
                 color = MaterialTheme.colorScheme.tertiary,
             )

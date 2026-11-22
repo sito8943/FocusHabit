@@ -27,7 +27,6 @@ import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import dev.sito8943.focushabit.ui.theme.Bebas
 import dev.sito8943.focushabit.ui.theme.Brand
 import kotlin.math.cos
 import kotlin.math.sin
@@ -103,7 +102,7 @@ fun Celebration(
                         Modifier.padding(horizontal = 32.dp, vertical = 24.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
-                        Text(title, fontFamily = Bebas, fontSize = 34.sp, color = MaterialTheme.colorScheme.tertiary)
+                        TitleText(title, fontSize = 34.sp, color = MaterialTheme.colorScheme.tertiary)
                         Text(
                             message,
                             style = MaterialTheme.typography.bodyMedium,

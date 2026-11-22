@@ -51,7 +51,7 @@ import dev.sito8943.focushabit.feature.form.HabitFormScreen
 import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
-import dev.sito8943.focushabit.ui.theme.Bebas
+import dev.sito8943.focushabit.ui.patterns.TitleText
 
 private enum class Tab { Today, Calendar }
 
@@ -91,9 +91,8 @@ fun MainScreen(container: AppContainer) {
             TopAppBar(
                 title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
+                        TitleText(
                             stringResource(R.string.app_name),
-                            fontFamily = Bebas,
                             fontSize = 28.sp,
                             color = MaterialTheme.colorScheme.tertiary,
                         )

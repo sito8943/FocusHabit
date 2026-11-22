@@ -30,7 +30,7 @@ import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
-import dev.sito8943.focushabit.ui.theme.Bebas
+import dev.sito8943.focushabit.ui.patterns.TitleText
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.ui.theme.FocusColors
@@ -62,11 +62,10 @@ fun CalendarScreen(
                     contentDescription = stringResource(R.string.calendar_previous_month),
                 )
             }
-            Text(
+            TitleText(
                 text = "${state.month.month.getDisplayName(TextStyle.FULL_STANDALONE, locale)} ${state.month.year}"
                     .replaceFirstChar { it.titlecase(locale) },
                 modifier = Modifier.weight(1f),
-                fontFamily = Bebas,
                 fontSize = 30.sp,
                 color = MaterialTheme.colorScheme.tertiary,
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -102,7 +101,7 @@ fun CalendarScreen(
                         val day = week.getOrNull(index)
                         Box(Modifier.weight(1f).aspectRatio(1f)) {
                             if (day != null) {
-                                DayCell(day, state.appearance(day)) { onSelect(day) }
+                                DayCell(day, state.appearance(day), isToday = day == state.today) { onSelect(day) }
                             }
                         }
                     }
@@ -120,7 +119,7 @@ fun CalendarScreen(
 }
 
 @Composable
-private fun DayCell(day: LocalDate, appearance: DayAppearance, onClick: () -> Unit) {
+private fun DayCell(day: LocalDate, appearance: DayAppearance, isToday: Boolean, onClick: () -> Unit) {
     val (container, content, border) = when (appearance) {
         DayAppearance.Selected -> Triple(
             MaterialTheme.colorScheme.tertiary,
@@ -141,7 +140,12 @@ private fun DayCell(day: LocalDate, appearance: DayAppearance, onClick: () -> Un
         shape = RoundedCornerShape(12.dp),
         color = container,
         contentColor = content,
-        border = border?.let { BorderStroke(if (appearance == DayAppearance.Today) 2.dp else 1.dp, it) },
+        // Today always keeps its gold ring, also when it is selected or done:
+        // those win the fill, and today used to disappear behind them.
+        border = when {
+            isToday -> BorderStroke(3.dp, FocusColors.Today)
+            else -> border?.let { BorderStroke(1.dp, it) }
+        },
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(

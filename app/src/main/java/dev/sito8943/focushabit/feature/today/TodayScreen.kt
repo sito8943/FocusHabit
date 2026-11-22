@@ -69,7 +69,7 @@ import dev.sito8943.focushabit.ui.patterns.DotGrid
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.ProgressRing
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
-import dev.sito8943.focushabit.ui.theme.Bebas
+import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.LocalDate
 import java.time.LocalTime
@@ -172,14 +172,13 @@ private fun DayHeader(state: TodayUiState, onBackToToday: () -> Unit) {
     ) {
         Column(Modifier.weight(1f)) {
             SectionLabel(state.date.format(DateTimeFormatter.ofPattern("EEEE, d MMMM", locale)))
-            Text(
+            TitleText(
                 text = when (state.date) {
                     state.today -> stringResource(greeting(LocalTime.now().hour))
                     state.today.minusDays(1) -> stringResource(R.string.day_yesterday)
                     state.today.plusDays(1) -> stringResource(R.string.day_tomorrow)
                     else -> state.date.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM))
                 },
-                fontFamily = Bebas,
                 fontSize = 34.sp,
                 color = MaterialTheme.colorScheme.tertiary,
                 maxLines = 1,
@@ -238,7 +237,7 @@ private fun WeekStrip(state: TodayUiState, onSelect: (LocalDate) -> Unit) {
                 color = container,
                 contentColor = content,
                 border = when {
-                    day == state.today && !selected -> BorderStroke(2.dp, FocusColors.Today)
+                    day == state.today -> BorderStroke(3.dp, FocusColors.Today)
                     container == MaterialTheme.colorScheme.surface ->
                         BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     else -> null
