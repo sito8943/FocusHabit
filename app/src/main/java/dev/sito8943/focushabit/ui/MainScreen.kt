@@ -48,6 +48,11 @@ import dev.sito8943.focushabit.core.di.AppContainer
 import dev.sito8943.focushabit.core.sync.SyncStatus
 import dev.sito8943.focushabit.feature.calendar.CalendarScreen
 import dev.sito8943.focushabit.feature.form.HabitFormScreen
+import dev.sito8943.focushabit.feature.recovery.RecoveryViewModel
+import dev.sito8943.focushabit.feature.settings.SettingsScreen
+import dev.sito8943.focushabit.core.settings.WeekStart
+import androidx.activity.compose.LocalActivity
+import java.time.DayOfWeek
 import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
@@ -60,6 +65,7 @@ private enum class Tab { Today, Calendar }
 fun MainScreen(container: AppContainer) {
     var tab by rememberSaveable { mutableStateOf(Tab.Today) }
     var showRecovery by rememberSaveable { mutableStateOf(false) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
     var openHabit by rememberSaveable { mutableStateOf<Long?>(null) }
     /** Habit form: [NEW_HABIT] to create, an id to edit, null when closed. */
     var form by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -77,6 +83,11 @@ fun MainScreen(container: AppContainer) {
 
     BackHandler(enabled = tab != Tab.Today) { tab = Tab.Today }
 
+    if (showSettings) {
+        SettingsRoute(container, onClose = { showSettings = false }, onRecoveryCode = { showRecovery = true })
+        RecoveryHost(showRecovery, recovery) { showRecovery = false }
+        return
+    }
     form?.let { target ->
         HabitFormRoute(container, target.takeIf { it != NEW_HABIT }, onClose = { form = null })
         return
@@ -100,8 +111,8 @@ fun MainScreen(container: AppContainer) {
                 },
                 actions = {
                     SyncButton(syncStatus) { container.syncCoordinator.refresh() }
-                    IconButton(onClick = { showRecovery = true }) {
-                        FaIcon(Fa.Key, contentDescription = stringResource(R.string.recovery_open))
+                    IconButton(onClick = { showSettings = true }) {
+                        FaIcon(Fa.Settings, contentDescription = stringResource(R.string.settings_title), Modifier.size(22.dp))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -157,8 +168,10 @@ fun MainScreen(container: AppContainer) {
 
                 Tab.Calendar -> {
                     val state by calendar.state.collectAsStateWithLifecycle()
+                    val weekStart by container.settings.weekStart.collectAsStateWithLifecycle()
                     CalendarScreen(
                         state = state,
+                        weekStart = if (weekStart == WeekStart.Monday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY,
                         onPrevious = calendar::previousMonth,
                         onNext = calendar::nextMonth,
                         onSelect = { day ->
@@ -171,7 +184,40 @@ fun MainScreen(container: AppContainer) {
         }
     }
 
-    if (showRecovery) {
+    RecoveryHost(showRecovery, recovery) { showRecovery = false }
+}
+
+@Composable
+private fun SettingsRoute(container: AppContainer, onClose: () -> Unit, onRecoveryCode: () -> Unit) {
+    val settings = container.settings
+    val language by settings.language.collectAsStateWithLifecycle()
+    val theme by settings.theme.collectAsStateWithLifecycle()
+    val weekStart by settings.weekStart.collectAsStateWithLifecycle()
+    val activity = LocalActivity.current
+    BackHandler(onBack = onClose)
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        SettingsScreen(
+            language = language,
+            theme = theme,
+            weekStart = weekStart,
+            onLanguage = {
+                if (it != language) {
+                    settings.setLanguage(it)
+                    activity?.recreate() // strings and dates are resolved per activity context
+                }
+            },
+            onTheme = settings::setTheme,
+            onWeekStart = settings::setWeekStart,
+            onRecoveryCode = onRecoveryCode,
+            onBack = onClose,
+            modifier = Modifier.safeDrawingPadding(),
+        )
+    }
+}
+
+@Composable
+private fun RecoveryHost(show: Boolean, recovery: RecoveryViewModel, onClose: () -> Unit) {
+    if (show) {
         val code by recovery.code.collectAsStateWithLifecycle()
         val state by recovery.state.collectAsStateWithLifecycle()
         RecoverySheet(
@@ -181,7 +227,7 @@ fun MainScreen(container: AppContainer) {
             onApply = recovery::apply,
             onShowRestore = recovery::showRestore,
             onDismiss = {
-                showRecovery = false
+                onClose()
                 recovery.reset()
             },
         )

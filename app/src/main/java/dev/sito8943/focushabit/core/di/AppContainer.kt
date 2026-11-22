@@ -5,6 +5,7 @@ import dev.sito8943.focushabit.BuildConfig
 import dev.sito8943.focushabit.core.data.FocusHabitDatabase
 import dev.sito8943.focushabit.core.data.HabitRepository
 import dev.sito8943.focushabit.core.network.SupabaseRest
+import dev.sito8943.focushabit.core.settings.AppSettings
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import dev.sito8943.focushabit.core.sync.HabitApi
 import dev.sito8943.focushabit.core.sync.SyncCoordinator
@@ -59,6 +60,8 @@ class AppContainer(context: Context) {
     }
 
     val codeStore: SyncCodeStore by lazy { SyncCodeStore(appContext) }
+
+    val settings: AppSettings by lazy { AppSettings(appContext) }
 
     val repository: HabitRepository by lazy { HabitRepository(database) }
 

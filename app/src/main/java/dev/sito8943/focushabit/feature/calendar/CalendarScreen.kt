@@ -46,6 +46,7 @@ fun CalendarScreen(
     onNext: () -> Unit,
     onSelect: (LocalDate) -> Unit,
     modifier: Modifier = Modifier,
+    weekStart: DayOfWeek = DayOfWeek.SUNDAY,
 ) {
     val locale = Locale.getDefault()
     Column(
@@ -79,8 +80,7 @@ fun CalendarScreen(
         }
 
         FocusCard(Modifier.fillMaxWidth()) {
-        // Sunday first, like the web.
-        val weekStart = DayOfWeek.SUNDAY
+        // Sunday first by default, like the web; Monday from Settings.
         Row(Modifier.fillMaxWidth().padding(bottom = 10.dp)) {
             (0L until 7L).forEach { offset ->
                 SectionLabel(
@@ -91,7 +91,7 @@ fun CalendarScreen(
         }
 
         val first = state.month.atDay(1)
-        val leading = (first.dayOfWeek.value % 7) // Sunday = 0
+        val leading = (first.dayOfWeek.value - weekStart.value + 7) % 7
         val cells: List<LocalDate?> = List(leading) { null } +
             (1..state.month.lengthOfMonth()).map { state.month.atDay(it) }
         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {

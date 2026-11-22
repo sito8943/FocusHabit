@@ -16,8 +16,6 @@
     <string name="calendar_legend_selected">Elegido</string>
     <string name="calendar_legend_logged">Hecho</string>
     <string name="calendar_legend_today">Hoy</string>
-
-    <string name="recovery_open">Abrir código de recuperación</string>
     <string name="recovery_title">Código de recuperación</string>
     <string name="recovery_description">Guarda este código. Úsalo en otro dispositivo para recuperar y sincronizar tus hábitos.</string>
     <string name="recovery_copy">Copiar código</string>
@@ -150,4 +148,18 @@
         <item quantity="many">%1$d días seguidos</item>
         <item quantity="other">%1$d días seguidos</item>
     </plurals>
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_language">Idioma</string>
+    <string name="settings_system">Sistema</string>
+    <string name="settings_theme">Tema</string>
+    <string name="settings_theme_light">Claro</string>
+    <string name="settings_theme_dark">Oscuro</string>
+    <string name="settings_week_start">La semana empieza en</string>
+    <string name="settings_sunday">Domingo</string>
+    <string name="settings_monday">Lunes</string>
+    <string name="settings_data">Datos</string>
+    <string name="settings_recovery_hint">Ver tu código o restaurar otro</string>
+    <string name="settings_about">Acerca de</string>
+    <string name="settings_version">Focus Habit %1$s</string>
+    <string name="settings_fonts_credit">Fuentes: Bebas Neue y Roboto (SIL OFL)</string>
 </resources>

@@ -18,8 +18,6 @@
     <string name="calendar_legend_selected">Selected</string>
     <string name="calendar_legend_logged">Logged</string>
     <string name="calendar_legend_today">Today</string>
-
-    <string name="recovery_open">Open recovery code</string>
     <string name="recovery_title">Recovery code</string>
     <string name="recovery_description">Save this code. Use it on another device to recover and sync your habits.</string>
     <string name="recovery_copy">Copy code</string>
@@ -144,4 +142,18 @@
         <item quantity="one">%1$d day streak</item>
         <item quantity="other">%1$d day streak</item>
     </plurals>
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_system">System</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_week_start">Week starts on</string>
+    <string name="settings_sunday">Sunday</string>
+    <string name="settings_monday">Monday</string>
+    <string name="settings_data">Data</string>
+    <string name="settings_recovery_hint">See your code or restore another one</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">Focus Habit %1$s</string>
+    <string name="settings_fonts_credit">Fonts: Bebas Neue and Roboto (SIL OFL)</string>
 </resources>

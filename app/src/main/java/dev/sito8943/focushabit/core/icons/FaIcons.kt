@@ -122,6 +122,7 @@ object Fa {
     const val Calendar = "calendar-days"
     const val Today = "circle-check"
     const val Key = "key"
+    const val Settings = "gear"
     const val Sync = "arrows-rotate"
     const val BackToToday = "rotate-left"
 }
