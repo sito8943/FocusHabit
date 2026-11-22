@@ -1,63 +1,65 @@
 # Focus Habit (Android)
 
-Native Kotlin/Compose port of the web habit tracker
+Native Kotlin/Compose habit tracker, the Android side of the web app
 [`sito8943/habbit-tracker`](https://github.com/sito8943/habbit-tracker).
-Same Supabase backend and the same 4-character recovery code, so the web and the
-phone can share habits.
 
-## What it does
+## Features
 
-- Create habits (name + one of 6 colours), delete them (with confirmation).
-- Mark any day as done; streak counted back from today.
-- Calendar with month navigation: blue = selected, green = something done, orange = today.
-- Recovery code: shows yours, or restores another one to load its habits.
-- Offline-first: everything is saved on the phone (Room) and synced on its own
-  when there is network (engine modelled on SitoWallet's).
+- Habits with name, colour and a Font Awesome icon (≈1,400, searchable in English and Spanish).
+- **Do** habits and **Quit** habits (days clean, relapses).
+- Frequencies: every day, some weekdays, every N days, N per week, N per month.
+- Optional goal: N times in total, or N days in a row without it.
+- Today: day strip, collapsible progress (n/m, %, perfect-days streak, 4-row heatmap),
+  "due today" vs "other days", celebration when the day is complete.
+- Habit detail: 6-month grid, streak and best streak, weekday bars, goal progress, edit/delete.
+- Calendar with month navigation; week starting Sunday or Monday.
+- Settings: language (system/Español/English), theme (system/light/dark), recovery code.
+- Offline-first: everything lives on the phone (Room).
 
-## Setup
-
-`local.properties` (not in Git):
-
-```properties
-sdk.dir=/Users/<you>/Library/Android/sdk
-supabase.url=https://<project>.supabase.co      # VITE_SUPABASE_CO of the web
-supabase.anonKey=<anon key>                     # VITE_SUPABASE_ANON of the web
-```
-
-Without them the app still works, only locally ("sync not configured" banner).
-
-The backend tables are in [`docs/supabase-schema.sql`](docs/supabase-schema.sql).
+**Sync is off.** The engine (Room + push/pull against Supabase, modelled on SitoWallet)
+is in `core/sync`, but the backend tables do not exist yet — see
+[`docs/supabase-schema.sql`](docs/supabase-schema.sql) and [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Build
 
 ```bash
-./gradlew :app:testDebugUnitTest      # unit tests
-./gradlew :app:assembleDebug          # debug, installs as com.sito8943.focushabit.debug
-./gradlew :app:assembleRelease        # signed APK if keystore.properties exists
+./gradlew :app:testDebugUnitTest   # unit tests
+./gradlew :app:assembleDebug        # debug, installs as com.sito8943.focushabit.debug
+./gradlew dist                      # production APK -> dist/FocusHabit-<version>.apk
 ```
 
-Release signing: `keystore.properties` + `focushabit-release.jks` at the root,
-both gitignored. **Back them up**: an APK signed with another key cannot update
-an installed one (uninstall = local data lost).
+`dist` builds the release variant: R8 minify + resource shrinking, trimmed META-INF,
+no dependency-info blob, signed with the release key. `dist/` and `*.apk` are gitignored.
+
+Local, never committed:
+
+- `keystore.properties` + `focushabit-release.jks`: release signing. **Back them up**: an APK
+  signed with another key cannot update an installed one (uninstall = local data lost).
+- `local.properties`: `sdk.dir`, and for `-Psync=true` builds `supabase.url` / `supabase.anonKey`
+  (the web's `VITE_SUPABASE_CO` / `VITE_SUPABASE_ANON`).
 
 ## Architecture
 
-Single `:app` module, same conventions as SitoWallet / SitoChat:
+Single `:app` module, same conventions as SitoWallet (`../SitoWallet/ARCHITECTURE_RULES.md`):
 
 | Package | Role |
 |---|---|
-| `core/data` | Room (local source of truth), `HabitRepository` |
-| `core/network` | `SupabaseRest`: OkHttp against PostgREST with the anon key |
-| `core/sync` | `HabitApi` (endpoints), `SyncEngine` (push + pull/merge), `SyncCoordinator` (auto sync, status) |
-| `core/settings` | `SyncCodeStore` (recovery code) |
+| `core/model` | Habit, frequency, `HabitSchedule` (due days, streaks, goals) |
+| `core/data` | Room (local source of truth, migrations), `HabitRepository` |
+| `core/sync`, `core/network` | Supabase PostgREST client, push/pull engine, auto-sync coordinator |
+| `core/icons` | Font Awesome 7 Free solid font + catalog (`tools/fontawesome`) |
+| `core/settings` | Recovery code, app settings |
 | `core/di` | `AppContainer`, the only construction root (no Hilt) |
-| `feature/today`, `feature/calendar`, `feature/recovery` | UI + ViewModel per screen |
+| `feature/*` | Today, calendar, habit detail, habit form, settings, recovery |
+| `ui/patterns`, `ui/theme` | Reusable UI, brand colours, Bebas Neue + Roboto |
 
 ## Differences from the web (on purpose)
 
-- Dates are the phone's **local** date. The web uses the UTC date, so near midnight
-  "today" can differ between the two.
-- Deleting a habit soft-deletes its logs first, then the habit (the web does it the
-  other way round and its logs stay alive).
-- Calendar has month navigation; Today has previous/next day arrows.
-- Delete asks for confirmation. UI in English and Spanish.
+- Dates use the phone's local day (the web uses UTC).
+- Streaks stay alive until the day ends (the web resets to 0 every morning).
+- Deleting a habit soft-deletes its logs first (the web leaves them alive).
+- Icon, kind, frequency and goal are local-only until the backend has those columns.
+
+## Credits
+
+Icons: Font Awesome Free (CC BY 4.0). Fonts: Bebas Neue, Roboto (SIL OFL 1.1).

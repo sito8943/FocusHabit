@@ -18,9 +18,13 @@ fun loadProperties(name: String) = Properties().apply {
  */
 val localProperties = loadProperties("local.properties")
 
-/** `-PlocalOnly=true`: build without Supabase, everything stays on the phone. */
-val localOnly = providers.gradleProperty("localOnly").orNull == "true"
-fun supabase(key: String) = if (localOnly) "" else localProperties.getProperty(key, "")
+/**
+ * Sync is off by default: the Supabase tables do not exist yet (see
+ * docs/supabase-schema.sql), so every build keeps habits on the phone only.
+ * `-Psync=true` bakes the Supabase URL/key from local.properties in.
+ */
+val syncEnabled = providers.gradleProperty("sync").orNull == "true"
+fun supabase(key: String) = if (syncEnabled) localProperties.getProperty(key, "") else ""
 
 /**
  * Release signing material, outside the repo (`keystore.properties` + `.jks` are
@@ -93,8 +97,23 @@ android {
 
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // Licence texts, Kotlin/coroutines debug metadata and version files:
+            // nothing reads them at runtime.
+            excludes += listOf(
+                "/META-INF/{AL2.0,LGPL2.1}",
+                "/META-INF/*.version",
+                "/META-INF/*.kotlin_module",
+                "/META-INF/**/LICENSE*",
+                "DebugProbesKt.bin",
+                "kotlin-tooling-metadata.json",
+            )
         }
+    }
+
+    // Sideloaded APK, not Play: no need for the encrypted dependency report.
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 }
 
@@ -123,4 +142,17 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
 
     testImplementation(libs.junit)
+}
+
+/**
+ * `./gradlew dist`: signed, minified release APK copied to
+ * dist/FocusHabit-<version>.apk (dist/ and *.apk are gitignored), like SitoWallet.
+ */
+val distApkName = "FocusHabit-${android.defaultConfig.versionName}.apk"
+
+tasks.register<Copy>("dist") {
+    dependsOn("assembleRelease")
+    from(layout.buildDirectory.file("outputs/apk/release/app-release.apk"))
+    into(rootProject.layout.projectDirectory.dir("dist"))
+    rename("app-release.apk", distApkName) // regex form: a lambda would capture the script (config cache)
 }

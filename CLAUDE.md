@@ -8,4 +8,5 @@
   with the web's `src/entities/*` queries and `docs/supabase-schema.sql`.
 - Room schema changes need a `Migration`; never `fallbackToDestructiveMigration`.
 - Never commit `local.properties`, `keystore.properties` or `*.jks`.
-- Verify with `./gradlew :app:testDebugUnitTest :app:assembleDebug`.
+- Verify with `./gradlew :app:testDebugUnitTest :app:assembleDebug`; production APK with `./gradlew dist`.
+- Sync is off by default (`-Psync=true` to enable); see docs/ROADMAP.md.
