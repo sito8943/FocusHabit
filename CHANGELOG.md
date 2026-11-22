@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+- `501d83c` fix: habit form reopened with the previous habit and Save disabled
+
 ## 0.1.0
 
 - `bad8ebe` feat: Focus Habit Android app (Kotlin + Compose)

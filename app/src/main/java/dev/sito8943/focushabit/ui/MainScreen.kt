@@ -30,6 +30,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -69,6 +70,18 @@ fun MainScreen(container: AppContainer) {
     var openHabit by rememberSaveable { mutableStateOf<Long?>(null) }
     /** Habit form: [NEW_HABIT] to create, an id to edit, null when closed. */
     var form by rememberSaveable { mutableStateOf<Long?>(null) }
+    /**
+     * Bumped on every opening, and part of the form ViewModel's key: each
+     * opening gets a fresh form. With a fixed key the activity-scoped ViewModel
+     * was reused, still holding the last habit and `saving = true`, so the
+     * next "+" showed old data and could not save. rememberSaveable keeps the
+     * draft across rotation.
+     */
+    var formSession by rememberSaveable { mutableIntStateOf(0) }
+    fun openForm(target: Long) {
+        formSession++
+        form = target
+    }
 
     val today = viewModel { container.createTodayViewModel() }
     val calendar = viewModel { container.createCalendarViewModel() }
@@ -89,11 +102,11 @@ fun MainScreen(container: AppContainer) {
         return
     }
     form?.let { target ->
-        HabitFormRoute(container, target.takeIf { it != NEW_HABIT }, onClose = { form = null })
+        HabitFormRoute(container, target.takeIf { it != NEW_HABIT }, formSession, onClose = { form = null })
         return
     }
     openHabit?.let { habitId ->
-        HabitDetailRoute(container, habitId, onClose = { openHabit = null }, onEdit = { form = habitId })
+        HabitDetailRoute(container, habitId, onClose = { openHabit = null }, onEdit = { openForm(habitId) })
         return
     }
 
@@ -127,7 +140,7 @@ fun MainScreen(container: AppContainer) {
                 TabItem(Tab.Today, tab, Fa.Today, R.string.tab_today) { tab = it }
                 Box(Modifier.weight(1f).align(Alignment.CenterVertically), contentAlignment = Alignment.Center) {
                     Surface(
-                        onClick = { form = NEW_HABIT },
+                        onClick = { openForm(NEW_HABIT) },
                         shape = CircleShape,
                         color = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -255,8 +268,8 @@ private fun RowScope.TabItem(target: Tab, current: Tab, icon: String, label: Int
 }
 
 @Composable
-private fun HabitFormRoute(container: AppContainer, habitId: Long?, onClose: () -> Unit) {
-    val vm = viewModel(key = "form-${habitId ?: "new"}") { container.createHabitFormViewModel(habitId) }
+private fun HabitFormRoute(container: AppContainer, habitId: Long?, session: Int, onClose: () -> Unit) {
+    val vm = viewModel(key = "form-${habitId ?: "new"}-$session") { container.createHabitFormViewModel(habitId) }
     val state by vm.state.collectAsStateWithLifecycle()
     BackHandler(onBack = onClose)
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
