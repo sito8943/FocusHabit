@@ -2,6 +2,7 @@ package dev.sito8943.focushabit.core.data
 
 import androidx.room.withTransaction
 import dev.sito8943.focushabit.core.model.Category
+import dev.sito8943.focushabit.core.model.keepPrefabKey
 import dev.sito8943.focushabit.core.model.Frequency
 import dev.sito8943.focushabit.core.model.Habit
 import dev.sito8943.focushabit.core.model.HabitKind
@@ -29,7 +30,7 @@ class HabitRepository(
         habits.observeActive(code).map { rows -> rows.map { it.toModel() } }
 
     fun observeCategories(code: String): Flow<List<Category>> =
-        categories.observe(code).map { rows -> rows.map { Category(it.id, it.name, it.color, it.icon) } }
+        categories.observe(code).map { rows -> rows.map { Category(it.id, it.name, it.color, it.icon, it.prefabKey) } }
 
     /** New category when [Category.id] is 0, otherwise an edit. Returns its id. */
     suspend fun saveCategory(code: String, category: Category): Long {
@@ -40,12 +41,21 @@ class HabitRepository(
                     name = category.name,
                     color = category.color,
                     icon = category.icon,
+                    prefabKey = keepPrefabKey(category.prefabKey, category.name),
                     createdAt = now().toString(),
                 ),
             )
         }
         val current = categories.get(category.id) ?: return category.id
-        categories.update(current.copy(name = category.name, color = category.color, icon = category.icon))
+        categories.update(
+            current.copy(
+                name = category.name,
+                color = category.color,
+                icon = category.icon,
+                // A rename to anything but the suggestion's name (in either language) makes it a plain name.
+                prefabKey = keepPrefabKey(current.prefabKey, category.name),
+            ),
+        )
         return category.id
     }
 

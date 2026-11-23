@@ -51,6 +51,7 @@ import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.FormHeight
 import dev.sito8943.focushabit.ui.patterns.HabitTile
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
+import dev.sito8943.focushabit.ui.patterns.label
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.util.Locale
@@ -98,7 +99,7 @@ fun CategoriesScreen(
                 )
             }
             state.items.forEach { item ->
-                CategoryRow(item, onEdit = { editing = item.category }, onDelete = { deleting = item.category })
+                CategoryRow(item, onEdit = { editing = item.category.copy(name = item.category.displayName(spanish)) }, onDelete = { deleting = item.category })
             }
 
             val suggestions = state.suggestions(spanish)
@@ -141,7 +142,7 @@ fun CategoriesScreen(
     deleting?.let { category ->
         AlertDialog(
             onDismissRequest = { deleting = null },
-            title = { Text(stringResource(R.string.categories_delete_title, category.name)) },
+            title = { Text(stringResource(R.string.categories_delete_title, category.label())) },
             text = { Text(stringResource(R.string.categories_delete_message)) },
             confirmButton = {
                 TextButton(onClick = {
@@ -165,10 +166,10 @@ private fun CategoryRow(item: CategoryItem, onEdit: () -> Unit, onDelete: () -> 
         shadowElevation = 1.dp,
     ) {
         Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-            HabitTile(category.name, category.icon, category.color)
+            HabitTile(category.label(), category.icon, category.color)
             Spacer(Modifier.width(14.dp))
             Column(Modifier.weight(1f)) {
-                Text(category.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(category.label(), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     pluralStringResource(R.plurals.categories_habit_count, item.habitCount, item.habitCount),
                     style = MaterialTheme.typography.bodySmall,
@@ -178,7 +179,7 @@ private fun CategoryRow(item: CategoryItem, onEdit: () -> Unit, onDelete: () -> 
             IconButton(onClick = onDelete) {
                 FaIcon(
                     Fa.Delete,
-                    stringResource(R.string.categories_delete_title, category.name),
+                    stringResource(R.string.categories_delete_title, category.label()),
                     Modifier.size(18.dp),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -236,6 +237,6 @@ private fun CategoryEditor(initial: Category, onSave: (Category) -> Unit, onDism
 
 /** Saves an optional [Category] across rotation. */
 private val CategorySaver = androidx.compose.runtime.saveable.Saver<Category?, List<Any?>>(
-    save = { it?.let { c -> listOf(c.id, c.name, c.color, c.icon) } ?: emptyList() },
-    restore = { if (it.isEmpty()) null else Category(it[0] as Long, it[1] as String, it[2] as String, it[3] as String?) },
+    save = { it?.let { c -> listOf(c.id, c.name, c.color, c.icon, c.prefabKey) } ?: emptyList() },
+    restore = { if (it.isEmpty()) null else Category(it[0] as Long, it[1] as String, it[2] as String, it[3] as String?, it[4] as String?) },
 )

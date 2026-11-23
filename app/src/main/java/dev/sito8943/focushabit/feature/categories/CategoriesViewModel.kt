@@ -21,10 +21,11 @@ data class CategoriesUiState(
     val items: List<CategoryItem> = emptyList(),
     val loading: Boolean = true,
 ) {
-    /** Prefabs whose name (in [spanish] or English) is not taken yet. */
+    /** Prefabs not added yet, by key or by name in either language. */
     fun suggestions(spanish: Boolean): List<CategoryPrefab> {
-        val taken = items.mapTo(HashSet()) { it.category.name.trim().lowercase() }
-        return CATEGORY_PREFABS.filter { it.name(spanish).lowercase() !in taken && it.nameEn.lowercase() !in taken }
+        val keys = items.mapNotNullTo(HashSet()) { it.category.prefabKey }
+        val names = items.map { it.category.name }
+        return CATEGORY_PREFABS.filter { prefab -> prefab.key !in keys && names.none(prefab::matches) }
     }
 }
 
@@ -50,7 +51,7 @@ class CategoriesViewModel(
     }
 
     fun addPrefab(prefab: CategoryPrefab, spanish: Boolean) =
-        save(Category(id = 0, name = prefab.name(spanish), color = prefab.color, icon = prefab.icon))
+        save(Category(id = 0, name = prefab.name(spanish), color = prefab.color, icon = prefab.icon, prefabKey = prefab.key))
 
     fun delete(id: Long) {
         viewModelScope.launch { repository.deleteCategory(id) }

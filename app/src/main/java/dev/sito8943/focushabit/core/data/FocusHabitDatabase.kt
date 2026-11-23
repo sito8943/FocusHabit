@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import dev.sito8943.focushabit.core.model.CATEGORY_PREFABS
 
 /**
  * Local source of truth. Schema changes need a `Migration` (never
@@ -13,7 +14,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 @Database(
     entities = [HabitEntity::class, HabitLogEntity::class, CategoryEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = true,
 )
 abstract class FocusHabitDatabase : RoomDatabase() {
@@ -27,7 +28,7 @@ abstract class FocusHabitDatabase : RoomDatabase() {
     companion object {
         fun build(context: Context): FocusHabitDatabase =
             Room.databaseBuilder(context, FocusHabitDatabase::class.java, "focus-habit.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
 
         /** Icon, kind, frequency, goal and start day. Existing habits stay daily "build" habits. */
@@ -60,6 +61,20 @@ abstract class FocusHabitDatabase : RoomDatabase() {
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_categories_code` ON `categories` (`code`)")
                 db.execSQL("ALTER TABLE habits ADD COLUMN category_id INTEGER")
+            }
+        }
+
+        /** Suggestion key per category, so its name follows the language. Existing ones named like a suggestion get it. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE categories ADD COLUMN prefab_key TEXT")
+                CATEGORY_PREFABS.forEach { prefab ->
+                    db.execSQL(
+                        "UPDATE categories SET prefab_key = ? WHERE prefab_key IS NULL AND " +
+                            "(lower(trim(name)) = lower(?) OR lower(trim(name)) = lower(?))",
+                        arrayOf(prefab.key, prefab.nameEn, prefab.nameEs),
+                    )
+                }
             }
         }
     }

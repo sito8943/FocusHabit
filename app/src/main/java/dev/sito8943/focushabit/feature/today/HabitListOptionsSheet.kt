@@ -35,6 +35,7 @@ import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
+import dev.sito8943.focushabit.ui.patterns.label
 import dev.sito8943.focushabit.ui.patterns.TitleText
 
 /** Opens the sort/filter sheet; a badge shows how many filters are on. */
@@ -142,7 +143,7 @@ fun HabitListOptionsSheet(
                                 onClick = {
                                     onChange(options.copy(categories = if (selected) options.categories - id else options.categories + id))
                                 },
-                                label = { Text(category?.name ?: stringResource(R.string.list_no_category)) },
+                                label = { Text(category?.label() ?: stringResource(R.string.list_no_category)) },
                             )
                         }
                     }

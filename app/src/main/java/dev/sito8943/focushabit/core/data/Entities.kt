@@ -70,6 +70,9 @@ data class CategoryEntity(
     val icon: String? = null,
     @ColumnInfo(name = "created_at")
     val createdAt: String,
+    /** Suggestion it came from while not renamed; the UI shows its translated name. */
+    @ColumnInfo(name = "prefab_key")
+    val prefabKey: String? = null,
 )
 
 /**

@@ -65,6 +65,7 @@ import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.FormHeight
 import dev.sito8943.focushabit.ui.patterns.HabitTile
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
+import dev.sito8943.focushabit.ui.patterns.label
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
@@ -457,7 +458,7 @@ private fun CategoryCard(
                 FilterChip(
                     selected = state.categoryId == category.id,
                     onClick = { onChange { it.copy(categoryId = category.id) } },
-                    label = { Text(category.name) },
+                    label = { Text(category.label()) },
                     leadingIcon = {
                         FaIcon(
                             category.icon ?: Fa.Tag,

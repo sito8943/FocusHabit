@@ -18,4 +18,13 @@ class CategoriesUiStateTest {
         assertFalse("work" in keys)
         assertEquals(CATEGORY_PREFABS.size - 2, keys.size)
     }
+
+    @Test
+    fun `suggestions hide prefabs added by key even after the language changed`() {
+        val state = CategoriesUiState(
+            listOf(CategoryItem(Category(1, "Aprendizaje", "#000000", prefabKey = "learning"), 0)),
+            loading = false,
+        )
+        assertFalse("learning" in state.suggestions(spanish = false).map { it.key })
+    }
 }
