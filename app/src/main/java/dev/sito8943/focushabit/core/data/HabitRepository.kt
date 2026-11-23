@@ -1,6 +1,7 @@
 package dev.sito8943.focushabit.core.data
 
 import androidx.room.withTransaction
+import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.core.model.Frequency
 import dev.sito8943.focushabit.core.model.Habit
 import dev.sito8943.focushabit.core.model.HabitKind
@@ -22,9 +23,37 @@ class HabitRepository(
 
     private val habits = database.habits()
     private val logs = database.logs()
+    private val categories = database.categories()
 
     fun observeHabits(code: String): Flow<List<Habit>> =
         habits.observeActive(code).map { rows -> rows.map { it.toModel() } }
+
+    fun observeCategories(code: String): Flow<List<Category>> =
+        categories.observe(code).map { rows -> rows.map { Category(it.id, it.name, it.color, it.icon) } }
+
+    /** New category when [Category.id] is 0, otherwise an edit. Returns its id. */
+    suspend fun saveCategory(code: String, category: Category): Long {
+        if (category.id == 0L) {
+            return categories.insert(
+                CategoryEntity(
+                    code = code,
+                    name = category.name,
+                    color = category.color,
+                    icon = category.icon,
+                    createdAt = now().toString(),
+                ),
+            )
+        }
+        val current = categories.get(category.id) ?: return category.id
+        categories.update(current.copy(name = category.name, color = category.color, icon = category.icon))
+        return category.id
+    }
+
+    /** Its habits stay, without a category. */
+    suspend fun deleteCategory(id: Long) = database.withTransaction {
+        habits.clearCategory(id)
+        categories.delete(id)
+    }
 
     suspend fun getHabit(id: Long): Habit? = habits.get(id)?.takeIf { it.deletedAt == null }?.toModel()
 
@@ -53,7 +82,7 @@ class HabitRepository(
                     goal = draft.goal,
                     startDate = LocalDate.now().toString(),
                     time = draft.time?.toStorage(),
-                    category = draft.category,
+                    categoryId = draft.categoryId,
                 ),
             )
         } else {
@@ -68,7 +97,7 @@ class HabitRepository(
                     frequencyValue = frequencyValue,
                     goal = draft.goal,
                     time = draft.time?.toStorage(),
-                    category = draft.category,
+                    categoryId = draft.categoryId,
                 ),
             )
         }
@@ -114,7 +143,7 @@ private fun HabitEntity.toModel() = Habit(
     startDate = runCatching { LocalDate.parse(startDate) }
         .getOrElse { runCatching { LocalDate.parse(createdAt.take(10)) }.getOrDefault(LocalDate.MIN) },
     time = time?.let { runCatching { LocalTime.parse(it) }.getOrNull() },
-    category = category,
+    categoryId = categoryId,
 )
 
 private fun LocalTime.toStorage(): String = "%02d:%02d".format(hour, minute)

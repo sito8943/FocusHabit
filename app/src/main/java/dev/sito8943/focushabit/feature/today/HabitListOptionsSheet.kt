@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
+import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.patterns.TitleText
 
@@ -123,15 +124,16 @@ fun HabitListOptionsSheet(
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     SectionLabel(stringResource(R.string.form_category))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        val choices: List<String?> = state.categories + if (state.hasUncategorized) listOf(null) else emptyList()
+                        val choices: List<Category?> = state.categories + if (state.hasUncategorized) listOf(null) else emptyList()
                         choices.forEach { category ->
-                            val selected = category in options.categories
+                            val id = category?.id
+                            val selected = id in options.categories
                             FilterChip(
                                 selected = selected,
                                 onClick = {
-                                    onChange(options.copy(categories = if (selected) options.categories - category else options.categories + category))
+                                    onChange(options.copy(categories = if (selected) options.categories - id else options.categories + id))
                                 },
-                                label = { Text(category ?: stringResource(R.string.list_no_category)) },
+                                label = { Text(category?.name ?: stringResource(R.string.list_no_category)) },
                             )
                         }
                     }

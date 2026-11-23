@@ -126,6 +126,7 @@ object Fa {
     const val Sync = "arrows-rotate"
     const val BackToToday = "rotate-left"
     const val Filter = "sliders"
+    const val Tag = "tag"
 }
 
 /**

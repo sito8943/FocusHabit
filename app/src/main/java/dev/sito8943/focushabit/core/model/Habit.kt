@@ -66,8 +66,8 @@ data class Habit(
     val startDate: LocalDate = LocalDate.MIN,
     /** Optional time of day to do it. Only orders and labels the list (no reminder). */
     val time: LocalTime? = null,
-    /** Optional free-text group (e.g. "Health"). Null: none. */
-    val category: String? = null,
+    /** Optional [Category] id. Null: none. */
+    val categoryId: Long? = null,
 )
 
 data class HabitLog(

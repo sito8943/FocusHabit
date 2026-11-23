@@ -12,7 +12,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  * `fallbackToDestructiveMigration`): unsynced habits only live here.
  */
 @Database(
-    entities = [HabitEntity::class, HabitLogEntity::class],
+    entities = [HabitEntity::class, HabitLogEntity::class, CategoryEntity::class],
     version = 4,
     exportSchema = true,
 )
@@ -21,6 +21,8 @@ abstract class FocusHabitDatabase : RoomDatabase() {
     abstract fun habits(): HabitDao
 
     abstract fun logs(): HabitLogDao
+
+    abstract fun categories(): CategoryDao
 
     companion object {
         fun build(context: Context): FocusHabitDatabase =
@@ -48,10 +50,16 @@ abstract class FocusHabitDatabase : RoomDatabase() {
             }
         }
 
-        /** Optional category. Existing habits have none. */
+        /** Categories table and an optional category per habit. Existing habits have none. */
         val MIGRATION_3_4 = object : Migration(3, 4) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE habits ADD COLUMN category TEXT")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `categories` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "`code` TEXT NOT NULL, `name` TEXT NOT NULL, `color` TEXT NOT NULL, `icon` TEXT, " +
+                        "`created_at` TEXT NOT NULL)",
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS `index_categories_code` ON `categories` (`code`)")
+                db.execSQL("ALTER TABLE habits ADD COLUMN category_id INTEGER")
             }
         }
     }

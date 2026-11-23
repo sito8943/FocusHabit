@@ -18,8 +18,7 @@ class HabitListOptionsStore(context: Context) {
             .putString(KEY_SORT, value.sort.name)
             .putString(KEY_STATUS, value.status.name)
             .putStringSet(KEY_FREQUENCIES, value.frequencies.mapTo(HashSet()) { it.name })
-            // A category is never blank, so "" stands for "no category".
-            .putStringSet(KEY_CATEGORIES, value.categories.mapTo(HashSet()) { it ?: NO_CATEGORY })
+            .putStringSet(KEY_CATEGORIES, value.categories.mapTo(HashSet()) { it?.toString() ?: NO_CATEGORY })
             .apply()
         _options.value = value
     }
@@ -30,7 +29,8 @@ class HabitListOptionsStore(context: Context) {
         frequencies = prefs.getStringSet(KEY_FREQUENCIES, null).orEmpty()
             .mapNotNullTo(HashSet()) { name -> FrequencyKind.entries.firstOrNull { it.name == name } },
         categories = prefs.getStringSet(KEY_CATEGORIES, null).orEmpty()
-            .mapTo(HashSet()) { it.takeIf { it != NO_CATEGORY } },
+            .filter { it == NO_CATEGORY || it.toLongOrNull() != null }
+            .mapTo(HashSet()) { it.toLongOrNull() }, // NO_CATEGORY -> null
     )
 
     private companion object {

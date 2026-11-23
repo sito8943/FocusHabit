@@ -24,13 +24,13 @@ enum class StatusFilter { All, Pending, Done }
 
 /**
  * How the Today lists are shown. Empty [frequencies]/[categories] mean "all".
- * In [categories], null stands for "no category".
+ * [categories] holds category ids; null stands for "no category".
  */
 data class HabitListOptions(
     val sort: HabitSort = HabitSort.Default,
     val status: StatusFilter = StatusFilter.All,
     val frequencies: Set<FrequencyKind> = emptySet(),
-    val categories: Set<String?> = emptySet(),
+    val categories: Set<Long?> = emptySet(),
 ) {
     /** Number of active filters (sort not included), for the badge. */
     val activeFilters: Int
@@ -49,14 +49,14 @@ data class HabitListOptions(
                 StatusFilter.Done -> row.done
             } &&
                 (frequencies.isEmpty() || row.frequency in frequencies) &&
-                (categories.isEmpty() || row.category in categories)
+                (categories.isEmpty() || row.category?.id in categories)
         }
         return when (sort) {
             HabitSort.Default -> filtered
             HabitSort.Name -> filtered.sortedBy { it.name.lowercase() }
             HabitSort.Status -> filtered.sortedBy { it.done }
             HabitSort.Frequency -> filtered.sortedBy { it.frequency }
-            HabitSort.Category -> filtered.sortedWith(compareBy(nullsLast()) { it.category?.lowercase() })
+            HabitSort.Category -> filtered.sortedWith(compareBy(nullsLast()) { it.category?.name?.lowercase() })
         }
     }
 }

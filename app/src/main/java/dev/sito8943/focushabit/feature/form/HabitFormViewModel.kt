@@ -3,6 +3,7 @@ package dev.sito8943.focushabit.feature.form
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.sito8943.focushabit.core.data.HabitRepository
+import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.core.model.Frequency
 import dev.sito8943.focushabit.core.model.Habit
 import dev.sito8943.focushabit.core.model.HabitColors
@@ -13,7 +14,6 @@ import java.time.LocalTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -35,10 +35,10 @@ data class HabitFormState(
     val goal: Int = 30,
     /** Null: no time of day. */
     val time: LocalTime? = null,
-    /** Free text; blank means no category. */
-    val category: String = "",
-    /** Categories already used by other habits, offered as chips. */
-    val categorySuggestions: List<String> = emptyList(),
+    /** Null: no category. */
+    val categoryId: Long? = null,
+    /** The user's categories, offered as chips. */
+    val categories: List<Category> = emptyList(),
     val saving: Boolean = false,
 ) {
     val canSave: Boolean
@@ -66,16 +66,18 @@ class HabitFormViewModel(
     val isEdit: Boolean = habitId != null
 
     init {
-        viewModelScope.launch {
-            val suggestions = repository.observeHabits(codeStore.code.value).first()
-                .mapNotNull { it.category }
-                .distinct()
-                .sortedBy { it.lowercase() }
-            if (habitId != null) {
+        if (habitId != null) {
+            viewModelScope.launch {
                 val habit = repository.getHabit(habitId)
-                _state.value = (habit?.toForm() ?: HabitFormState()).copy(categorySuggestions = suggestions)
-            } else {
-                _state.update { it.copy(categorySuggestions = suggestions) }
+                _state.update { (habit?.toForm() ?: HabitFormState()).copy(categories = it.categories) }
+            }
+        }
+        viewModelScope.launch {
+            repository.observeCategories(codeStore.code.value).collect { categories ->
+                _state.update { form ->
+                    // A category deleted meanwhile is no longer selectable.
+                    form.copy(categories = categories, categoryId = form.categoryId?.takeIf { id -> categories.any { it.id == id } })
+                }
             }
         }
     }
@@ -99,7 +101,7 @@ class HabitFormViewModel(
                     frequency = form.frequency(),
                     goal = form.goal.takeIf { form.goalEnabled },
                     time = form.time,
-                    category = form.category.trim().ifBlank { null },
+                    categoryId = form.categoryId,
                 ),
             )
             onSaved()
@@ -116,7 +118,7 @@ private fun Habit.toForm(): HabitFormState {
         goalEnabled = goal != null,
         goal = goal ?: 30,
         time = time,
-        category = category.orEmpty(),
+        categoryId = categoryId,
     )
     return when (val f = frequency) {
         Frequency.Daily -> base

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.sito8943.focushabit.core.data.HabitRepository
 import dev.sito8943.focushabit.core.di.DateState
+import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.model.HabitSchedule
 import dev.sito8943.focushabit.core.model.PeriodProgress
@@ -42,7 +43,7 @@ data class HabitRow(
     /** Optional time of day; timed habits come first, earliest first. */
     val time: LocalTime? = null,
     val frequency: FrequencyKind = FrequencyKind.Daily,
-    val category: String? = null,
+    val category: Category? = null,
 )
 
 data class TodayUiState(
@@ -59,8 +60,8 @@ data class TodayUiState(
     val hasHabits: Boolean,
     val loading: Boolean,
     val options: HabitListOptions = HabitListOptions(),
-    /** Categories in use (sorted), for the filter chips. */
-    val categories: List<String> = emptyList(),
+    /** The user's categories (by name), for the filter chips. */
+    val categories: List<Category> = emptyList(),
     /** True if some habit has no category (offers a "No category" chip). */
     val hasUncategorized: Boolean = false,
 ) {
@@ -90,12 +91,13 @@ class TodayViewModel(
     val state: StateFlow<TodayUiState> = codeStore.code
         .flatMapLatest { code ->
             combine(
-                repository.observeHabits(code),
+                combine(repository.observeHabits(code), repository.observeCategories(code), ::Pair),
                 repository.observeLogs(code),
                 dates.selected,
                 dates.today,
                 settings.weekStart,
-            ) { habits, logs, selected, today, weekStart ->
+            ) { (habits, categories), logs, selected, today, weekStart ->
+                val categoryById = categories.associateBy { it.id }
                 val logsByHabit = logs.groupBy({ it.habitId }, { it.date }).mapValues { it.value.toSet() }
                 val schedules = habits.map { HabitSchedule(it, logsByHabit[it.id].orEmpty(), weekStart.dayOfWeek) }
                 val completion = buildMap {
@@ -121,7 +123,7 @@ class TodayViewModel(
                         goalProgress = schedule.goalProgress(today),
                         time = habit.time,
                         frequency = FrequencyKind.of(habit.frequency),
-                        category = habit.category,
+                        category = habit.categoryId?.let(categoryById::get),
                     )
                     row to (schedule.isOpen(selected) || row.done && habit.kind == HabitKind.Build)
                 }
@@ -134,14 +136,14 @@ class TodayViewModel(
                     perfectStreak = perfectDaysStreak({ completion[it] }, today),
                     hasHabits = habits.isNotEmpty(),
                     loading = false,
-                    categories = habits.mapNotNull { it.category }.distinct().sortedBy { it.lowercase() },
-                    hasUncategorized = habits.any { it.category == null },
+                    categories = categories,
+                    hasUncategorized = habits.any { it.categoryId == null || it.categoryId !in categoryById },
                 )
             }.flowOn(Dispatchers.Default)
         }
         .combine(listOptions.options) { state, options ->
             // A remembered category that no habit uses any more has no chip to clear it: ignore it.
-            val known = state.categories.toSet<String?>() + if (state.hasUncategorized) setOf(null) else emptySet()
+            val known = state.categories.mapTo(HashSet<Long?>()) { it.id } + if (state.hasUncategorized) setOf(null) else emptySet()
             state.copy(options = options.copy(categories = options.categories.filterTo(HashSet()) { it in known }))
         }
         .stateIn(

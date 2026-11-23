@@ -433,32 +433,33 @@ private fun Stepper(
     }
 }
 
-/** Optional free-text category, with the ones already in use as quick picks. */
+/** Optional category: "None" or one of the user's categories. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun CategoryCard(state: HabitFormState, onChange: ((HabitFormState) -> HabitFormState) -> Unit) {
     FocusCard(Modifier.fillMaxWidth()) {
         SectionLabel(stringResource(R.string.form_category))
-        Spacer(Modifier.height(10.dp))
-        CompactTextField(
-            value = state.category,
-            onValueChange = { value -> onChange { it.copy(category = value) } },
-            placeholder = stringResource(R.string.form_category_placeholder),
-            onDone = {},
-            modifier = Modifier.fillMaxWidth().height(FormHeight),
-        )
-        val current = state.category.trim()
-        if (state.categorySuggestions.isNotEmpty()) {
-            Spacer(Modifier.height(8.dp))
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                state.categorySuggestions.forEach { category ->
-                    val selected = category.equals(current, ignoreCase = true)
-                    FilterChip(
-                        selected = selected,
-                        onClick = { onChange { it.copy(category = if (selected) "" else category) } },
-                        label = { Text(category) },
-                    )
-                }
+        Spacer(Modifier.height(8.dp))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = state.categoryId == null,
+                onClick = { onChange { it.copy(categoryId = null) } },
+                label = { Text(stringResource(R.string.list_no_category)) },
+            )
+            state.categories.forEach { category ->
+                FilterChip(
+                    selected = state.categoryId == category.id,
+                    onClick = { onChange { it.copy(categoryId = category.id) } },
+                    label = { Text(category.name) },
+                    leadingIcon = {
+                        FaIcon(
+                            category.icon ?: Fa.Tag,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = FocusColors.parse(category.color),
+                        )
+                    },
+                )
             }
         }
     }
