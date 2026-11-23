@@ -14,6 +14,7 @@ import dev.sito8943.focushabit.feature.calendar.CalendarViewModel
 import dev.sito8943.focushabit.feature.form.HabitFormViewModel
 import dev.sito8943.focushabit.feature.habit.HabitDetailViewModel
 import dev.sito8943.focushabit.feature.recovery.RecoveryViewModel
+import dev.sito8943.focushabit.feature.today.HabitListOptionsStore
 import dev.sito8943.focushabit.feature.today.TodayViewModel
 import java.time.LocalDate
 import kotlinx.coroutines.CoroutineScope
@@ -62,6 +63,7 @@ class AppContainer(context: Context) {
     val codeStore: SyncCodeStore by lazy { SyncCodeStore(appContext) }
 
     val settings: AppSettings by lazy { AppSettings(appContext) }
+    val listOptions: HabitListOptionsStore by lazy { HabitListOptionsStore(appContext) }
 
     val repository: HabitRepository by lazy { HabitRepository(database) }
 
@@ -77,7 +79,7 @@ class AppContainer(context: Context) {
         )
     }
 
-    fun createTodayViewModel() = TodayViewModel(repository, codeStore, dates, settings)
+    fun createTodayViewModel() = TodayViewModel(repository, codeStore, dates, settings, listOptions)
 
     fun createCalendarViewModel() = CalendarViewModel(repository, codeStore, dates)
 

@@ -16,7 +16,6 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -85,9 +84,8 @@ class TodayViewModel(
     private val codeStore: SyncCodeStore,
     private val dates: DateState,
     private val settings: AppSettings,
+    private val listOptions: HabitListOptionsStore,
 ) : ViewModel() {
-
-    private val options = MutableStateFlow(HabitListOptions())
 
     val state: StateFlow<TodayUiState> = codeStore.code
         .flatMapLatest { code ->
@@ -141,7 +139,11 @@ class TodayViewModel(
                 )
             }.flowOn(Dispatchers.Default)
         }
-        .combine(options) { state, options -> state.copy(options = options) }
+        .combine(listOptions.options) { state, options ->
+            // A remembered category that no habit uses any more has no chip to clear it: ignore it.
+            val known = state.categories.toSet<String?>() + if (state.hasUncategorized) setOf(null) else emptySet()
+            state.copy(options = options.copy(categories = options.categories.filterTo(HashSet()) { it in known }))
+        }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
@@ -164,7 +166,7 @@ class TodayViewModel(
     }
 
     fun setOptions(value: HabitListOptions) {
-        options.value = value
+        listOptions.set(value)
     }
 
     fun select(day: LocalDate) {
