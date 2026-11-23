@@ -35,6 +35,8 @@ data class HabitDetailUiState(
     /** Build: done today. Quit: relapsed today. */
     val loggedToday: Boolean,
     val loading: Boolean,
+    /** Build habits: next day it is still to be done (today if pending). */
+    val nextDue: LocalDate? = null,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -67,6 +69,7 @@ class HabitDetailViewModel(
                     weekdays = weekdayCounts(days, today),
                     loggedToday = today in days,
                     loading = false,
+                    nextDue = schedule.nextDue(today),
                 )
             }
         }

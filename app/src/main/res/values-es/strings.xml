@@ -55,6 +55,9 @@
         <item quantity="many">%1$d días completados</item>
         <item quantity="other">%1$d días completados</item>
     </plurals>
+    <string name="detail_next">Próximo día</string>
+    <string name="detail_next_today">Hoy</string>
+    <string name="detail_next_tomorrow">Mañana</string>
     <string name="detail_streak">Racha</string>
     <string name="detail_best">Mejor racha</string>
     <string name="detail_all_time">Récord histórico</string>

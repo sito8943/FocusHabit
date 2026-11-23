@@ -59,6 +59,18 @@ class HabitSchedule(
     /** Worth listing as "for today": due, or a flexible habit whose quota is still open. */
     fun isOpen(day: LocalDate): Boolean = isDue(day) || (isFlexible && periodProgress(day).let { it!!.done < it.target })
 
+    /**
+     * Next day from [today] on (inclusive) when a build habit is still to be
+     * done: due and not logged, or inside a period whose quota is open. Null
+     * for quit habits (every day counts) or if nothing is found within a year.
+     */
+    fun nextDue(today: LocalDate): LocalDate? {
+        if (habit.kind == HabitKind.Quit) return null
+        return generateSequence(maxOf(today, start)) { it.plusDays(1) }
+            .take(NEXT_DUE_LOOKAHEAD)
+            .firstOrNull { it !in logs && isOpen(it) }
+    }
+
     fun periodProgress(day: LocalDate): PeriodProgress? = when (val f = frequency) {
         is Frequency.TimesPerWeek -> PeriodProgress(logs.count { weekOf(it) == weekOf(day) }, f.times, StreakUnit.Weeks)
         is Frequency.TimesPerMonth ->
@@ -184,6 +196,8 @@ class HabitSchedule(
 
     private fun weekOf(day: LocalDate): LocalDate = day.with(TemporalAdjusters.previousOrSame(weekStart))
 }
+
+private const val NEXT_DUE_LOOKAHEAD = 400
 
 /**
  * Share of the habits due on [day] that are done (0..1), or null if nothing

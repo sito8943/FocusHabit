@@ -49,6 +49,10 @@ import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -127,6 +131,19 @@ fun HabitDetailScreen(
                     highlight = state.today,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
+            }
+
+            state.nextDue?.let { next ->
+                FocusCard(Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SectionLabel(stringResource(R.string.detail_next), Modifier.weight(1f))
+                        Text(
+                            nextDueText(next, state.today, habit.time),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -300,3 +317,14 @@ private fun unitText(unit: StreakUnit): String = stringResource(
         StreakUnit.Months -> R.string.unit_months
     },
 )
+
+/** "Today", "Tomorrow" or a short date, plus the habit's time if it has one. */
+@Composable
+private fun nextDueText(next: LocalDate, today: LocalDate, time: LocalTime?): String {
+    val day = when (next) {
+        today -> stringResource(R.string.detail_next_today)
+        today.plusDays(1) -> stringResource(R.string.detail_next_tomorrow)
+        else -> next.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault()))
+    }
+    return time?.let { "$day · ${it.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))}" } ?: day
+}

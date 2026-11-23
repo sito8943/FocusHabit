@@ -55,6 +55,9 @@
         <item quantity="one">%1$d day completed</item>
         <item quantity="other">%1$d days completed</item>
     </plurals>
+    <string name="detail_next">Next</string>
+    <string name="detail_next_today">Today</string>
+    <string name="detail_next_tomorrow">Tomorrow</string>
     <string name="detail_streak">Streak</string>
     <string name="detail_best">Best streak</string>
     <string name="detail_all_time">All-time record</string>
