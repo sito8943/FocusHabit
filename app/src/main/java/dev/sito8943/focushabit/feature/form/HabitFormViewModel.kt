@@ -9,6 +9,7 @@ import dev.sito8943.focushabit.core.model.HabitColors
 import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import java.time.DayOfWeek
+import java.time.LocalTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +32,8 @@ data class HabitFormState(
     val perMonth: Int = 10,
     val goalEnabled: Boolean = false,
     val goal: Int = 30,
+    /** Null: no time of day. */
+    val time: LocalTime? = null,
     val saving: Boolean = false,
 ) {
     val canSave: Boolean
@@ -84,6 +87,7 @@ class HabitFormViewModel(
                     kind = form.kind,
                     frequency = form.frequency(),
                     goal = form.goal.takeIf { form.goalEnabled },
+                    time = form.time,
                 ),
             )
             onSaved()
@@ -99,6 +103,7 @@ private fun Habit.toForm(): HabitFormState {
         kind = kind,
         goalEnabled = goal != null,
         goal = goal ?: 30,
+        time = time,
     )
     return when (val f = frequency) {
         Frequency.Daily -> base

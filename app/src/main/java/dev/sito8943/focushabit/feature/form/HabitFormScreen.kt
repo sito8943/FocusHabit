@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -31,6 +32,9 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,8 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
-import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.core.icons.FaGlyph
+import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.core.icons.FaIcons
 import dev.sito8943.focushabit.core.model.HabitColors
 import dev.sito8943.focushabit.core.model.HabitKind
@@ -64,6 +68,9 @@ import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -183,7 +190,57 @@ fun HabitFormScreen(
                     )
                 }
             }
+
+            TimeCard(state.time) { time -> onChange { it.copy(time = time) } }
         }
+    }
+}
+
+/** Optional time of day: a switch, the chosen time and a picker dialog. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimeCard(time: LocalTime?, onTime: (LocalTime?) -> Unit) {
+    var picking by rememberSaveable { mutableStateOf(false) }
+    FocusCard(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                SectionLabel(stringResource(R.string.form_time))
+                Text(
+                    stringResource(R.string.form_time_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = time != null,
+                onCheckedChange = { on -> if (on) picking = true else onTime(null) },
+            )
+        }
+        AnimatedVisibility(time != null) {
+            TextButton(onClick = { picking = true }, modifier = Modifier.padding(top = 4.dp)) {
+                Text(
+                    time?.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)).orEmpty(),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            }
+        }
+    }
+    if (picking) {
+        val initial = time ?: LocalTime.of(9, 0)
+        val picker = rememberTimePickerState(initial.hour, initial.minute)
+        AlertDialog(
+            onDismissRequest = { picking = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTime(LocalTime.of(picker.hour, picker.minute))
+                    picking = false
+                }) { Text(stringResource(android.R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { picking = false }) { Text(stringResource(android.R.string.cancel)) }
+            },
+            text = { TimePicker(picker) },
+        )
     }
 }
 

@@ -7,6 +7,7 @@ import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.model.HabitLog
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -51,6 +52,7 @@ class HabitRepository(
                     frequencyValue = frequencyValue,
                     goal = draft.goal,
                     startDate = LocalDate.now().toString(),
+                    time = draft.time?.toStorage(),
                 ),
             )
         } else {
@@ -64,6 +66,7 @@ class HabitRepository(
                     frequency = frequency,
                     frequencyValue = frequencyValue,
                     goal = draft.goal,
+                    time = draft.time?.toStorage(),
                 ),
             )
         }
@@ -108,4 +111,7 @@ private fun HabitEntity.toModel() = Habit(
     goal = goal,
     startDate = runCatching { LocalDate.parse(startDate) }
         .getOrElse { runCatching { LocalDate.parse(createdAt.take(10)) }.getOrDefault(LocalDate.MIN) },
+    time = time?.let { runCatching { LocalTime.parse(it) }.getOrNull() },
 )
+
+private fun LocalTime.toStorage(): String = "%02d:%02d".format(hour, minute)

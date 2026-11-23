@@ -402,6 +402,7 @@ private fun HabitItem(
 @Composable
 private fun habitSubtitle(habit: HabitRow): String {
     val parts = mutableListOf<String>()
+    habit.time?.let { parts += it.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)) }
     habit.period?.let { parts += periodText(it) }
     parts += streakText(habit.streak, habit.kind)
     habit.goal?.let { goal ->

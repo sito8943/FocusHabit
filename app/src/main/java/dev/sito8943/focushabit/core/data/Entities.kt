@@ -51,6 +51,8 @@ data class HabitEntity(
     /** `YYYY-MM-DD`, local day the habit started counting. */
     @ColumnInfo(name = "start_date", defaultValue = "")
     val startDate: String = "",
+    /** `HH:mm`, optional time of day. */
+    val time: String? = null,
 )
 
 /**

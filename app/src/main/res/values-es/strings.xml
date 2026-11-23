@@ -104,6 +104,8 @@
     <string name="freq_per_month_label">veces al mes</string>
     <string name="form_goal">Meta</string>
     <string name="form_goal_hint">Objetivo opcional a cumplir.</string>
+    <string name="form_time">Hora</string>
+    <string name="form_time_hint">Hora del día opcional; ordena la lista.</string>
     <string name="goal_build_label">veces en total</string>
     <string name="goal_quit_label">días seguidos sin hacerlo</string>
     <string name="detail_clean">Sin recaer</string>

@@ -13,7 +13,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  */
 @Database(
     entities = [HabitEntity::class, HabitLogEntity::class],
-    version = 2,
+    version = 3,
     exportSchema = true,
 )
 abstract class FocusHabitDatabase : RoomDatabase() {
@@ -25,7 +25,7 @@ abstract class FocusHabitDatabase : RoomDatabase() {
     companion object {
         fun build(context: Context): FocusHabitDatabase =
             Room.databaseBuilder(context, FocusHabitDatabase::class.java, "focus-habit.db")
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
 
         /** Icon, kind, frequency, goal and start day. Existing habits stay daily "build" habits. */
@@ -38,6 +38,13 @@ abstract class FocusHabitDatabase : RoomDatabase() {
                 db.execSQL("ALTER TABLE habits ADD COLUMN goal INTEGER")
                 db.execSQL("ALTER TABLE habits ADD COLUMN start_date TEXT NOT NULL DEFAULT ''")
                 db.execSQL("UPDATE habits SET start_date = substr(created_at, 1, 10)")
+            }
+        }
+
+        /** Optional time of day. Existing habits have none. */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE habits ADD COLUMN time TEXT")
             }
         }
     }

@@ -104,6 +104,8 @@
     <string name="freq_per_month_label">times a month</string>
     <string name="form_goal">Goal</string>
     <string name="form_goal_hint">Optional target to reach.</string>
+    <string name="form_time">Time</string>
+    <string name="form_time_hint">Optional time of day; orders the list.</string>
     <string name="goal_build_label">times in total</string>
     <string name="goal_quit_label">days in a row without it</string>
     <string name="detail_clean">Clean</string>

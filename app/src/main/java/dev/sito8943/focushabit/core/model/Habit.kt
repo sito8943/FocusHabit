@@ -2,6 +2,7 @@ package dev.sito8943.focushabit.core.model
 
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
 
 /** Build = something to do. Quit = something to stop doing; its logs are relapses. */
 enum class HabitKind(val storage: String) {
@@ -63,6 +64,8 @@ data class Habit(
     /** Build: done this many times in total. Quit: this many days in a row without it. */
     val goal: Int? = null,
     val startDate: LocalDate = LocalDate.MIN,
+    /** Optional time of day to do it. Only orders and labels the list (no reminder). */
+    val time: LocalTime? = null,
 )
 
 data class HabitLog(

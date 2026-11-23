@@ -13,6 +13,7 @@ import dev.sito8943.focushabit.core.model.perfectDaysStreak
 import dev.sito8943.focushabit.core.settings.AppSettings
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,6 +39,8 @@ data class HabitRow(
     val period: PeriodProgress?,
     val goal: Int?,
     val goalProgress: Int,
+    /** Optional time of day; timed habits come first, earliest first. */
+    val time: LocalTime? = null,
 )
 
 data class TodayUiState(
@@ -90,7 +93,7 @@ class TodayViewModel(
                         day = day.plusDays(1)
                     }
                 }
-                val rows = schedules.map { schedule ->
+                val rows = schedules.sortedWith(compareBy(nullsLast()) { it.habit.time }).map { schedule ->
                     val habit = schedule.habit
                     val row = HabitRow(
                         id = habit.id,
@@ -104,6 +107,7 @@ class TodayViewModel(
                         period = schedule.periodProgress(selected),
                         goal = habit.goal,
                         goalProgress = schedule.goalProgress(today),
+                        time = habit.time,
                     )
                     row to (schedule.isOpen(selected) || row.done && habit.kind == HabitKind.Build)
                 }
