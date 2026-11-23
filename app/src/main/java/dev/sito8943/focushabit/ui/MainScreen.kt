@@ -174,6 +174,7 @@ fun MainScreen(container: AppContainer) {
                         onOpen = { openHabit = it },
                         onSelectDay = today::select,
                         onBackToToday = today::backToToday,
+                        onOptions = today::setOptions,
                     )
                 }
 

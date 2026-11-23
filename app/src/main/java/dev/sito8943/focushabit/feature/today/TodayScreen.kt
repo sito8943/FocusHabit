@@ -90,8 +90,12 @@ fun TodayScreen(
     onOpen: (Long) -> Unit,
     onSelectDay: (LocalDate) -> Unit,
     onBackToToday: () -> Unit,
+    onOptions: (HabitListOptions) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var showOptions by rememberSaveable { mutableStateOf(false) }
+    val visibleHabits = state.visibleHabits
+    val visibleOthers = state.visibleOthers
     // Celebrate the moment the last habit of today gets checked, not on opening
     // a day that was already complete.
     var celebrate by remember { mutableStateOf(false) }
@@ -117,22 +121,33 @@ fun TodayScreen(
             item(key = "strip") { WeekStrip(state, onSelectDay) }
             item(key = "hero") { ProgressAccordion(state, Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
             item(key = "label") {
-                SectionLabel(
-                    stringResource(R.string.today_habits),
-                    Modifier.padding(start = 20.dp, top = 8.dp),
-                )
+                Row(
+                    Modifier.fillMaxWidth().padding(start = 20.dp, end = 8.dp, top = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    SectionLabel(stringResource(R.string.today_habits), Modifier.weight(1f))
+                    if (state.hasHabits) {
+                        ListOptionsButton(state.options) { showOptions = true }
+                    }
+                }
             }
-            if (state.habits.isEmpty() && !state.loading) {
+            if (visibleHabits.isEmpty() && !state.loading) {
                 item(key = "empty") {
                     Text(
-                        text = stringResource(if (state.hasHabits) R.string.today_nothing_due else R.string.today_empty),
+                        text = stringResource(
+                            when {
+                                !state.hasHabits -> R.string.today_empty
+                                state.habits.isNotEmpty() -> R.string.today_no_match
+                                else -> R.string.today_nothing_due
+                            },
+                        ),
                         modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp),
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
-            items(state.habits, key = { it.id }) { habit ->
+            items(visibleHabits, key = { it.id }) { habit ->
                 HabitItem(
                     habit = habit,
                     onToggle = { onToggle(habit.id) },
@@ -140,14 +155,14 @@ fun TodayScreen(
                     modifier = Modifier.padding(horizontal = 16.dp).animateItem(),
                 )
             }
-            if (state.others.isNotEmpty()) {
+            if (visibleOthers.isNotEmpty()) {
                 item(key = "others-label") {
                     SectionLabel(
                         stringResource(R.string.today_others),
                         Modifier.padding(start = 20.dp, top = 12.dp).animateItem(),
                     )
                 }
-                items(state.others, key = { it.id }) { habit ->
+                items(visibleOthers, key = { it.id }) { habit ->
                     HabitItem(
                         habit = habit,
                         onToggle = { onToggle(habit.id) },
@@ -157,6 +172,13 @@ fun TodayScreen(
                 }
             }
         }
+    }
+    if (showOptions) {
+        HabitListOptionsSheet(
+            state = state,
+            onChange = onOptions,
+            onDismiss = { showOptions = false },
+        )
     }
     Celebration(
         visible = celebrate,

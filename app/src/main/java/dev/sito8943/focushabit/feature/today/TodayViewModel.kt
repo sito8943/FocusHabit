@@ -16,6 +16,7 @@ import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
@@ -41,6 +42,8 @@ data class HabitRow(
     val goalProgress: Int,
     /** Optional time of day; timed habits come first, earliest first. */
     val time: LocalTime? = null,
+    val frequency: FrequencyKind = FrequencyKind.Daily,
+    val category: String? = null,
 )
 
 data class TodayUiState(
@@ -56,7 +59,16 @@ data class TodayUiState(
     val perfectStreak: Int,
     val hasHabits: Boolean,
     val loading: Boolean,
+    val options: HabitListOptions = HabitListOptions(),
+    /** Categories in use (sorted), for the filter chips. */
+    val categories: List<String> = emptyList(),
+    /** True if some habit has no category (offers a "No category" chip). */
+    val hasUncategorized: Boolean = false,
 ) {
+    /** [habits] and [others] after the user's sort and filters; progress still counts all. */
+    val visibleHabits: List<HabitRow> get() = options.apply(habits)
+    val visibleOthers: List<HabitRow> get() = options.apply(others)
+
     val isToday: Boolean get() = date == today
     private val counted get() = habits.filter { it.required }
     val doneCount: Int get() = counted.count { it.done }
@@ -74,6 +86,8 @@ class TodayViewModel(
     private val dates: DateState,
     private val settings: AppSettings,
 ) : ViewModel() {
+
+    private val options = MutableStateFlow(HabitListOptions())
 
     val state: StateFlow<TodayUiState> = codeStore.code
         .flatMapLatest { code ->
@@ -108,6 +122,8 @@ class TodayViewModel(
                         goal = habit.goal,
                         goalProgress = schedule.goalProgress(today),
                         time = habit.time,
+                        frequency = FrequencyKind.of(habit.frequency),
+                        category = habit.category,
                     )
                     row to (schedule.isOpen(selected) || row.done && habit.kind == HabitKind.Build)
                 }
@@ -120,9 +136,12 @@ class TodayViewModel(
                     perfectStreak = perfectDaysStreak({ completion[it] }, today),
                     hasHabits = habits.isNotEmpty(),
                     loading = false,
+                    categories = habits.mapNotNull { it.category }.distinct().sortedBy { it.lowercase() },
+                    hasUncategorized = habits.any { it.category == null },
                 )
             }.flowOn(Dispatchers.Default)
         }
+        .combine(options) { state, options -> state.copy(options = options) }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5_000),
@@ -142,6 +161,10 @@ class TodayViewModel(
     fun toggle(habitId: Long) {
         val date = state.value.date
         viewModelScope.launch { repository.toggleLog(habitId, date) }
+    }
+
+    fun setOptions(value: HabitListOptions) {
+        options.value = value
     }
 
     fun select(day: LocalDate) {
