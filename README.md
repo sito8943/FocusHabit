@@ -58,7 +58,7 @@ Single `:app` module, same conventions as SitoWallet (`../SitoWallet/ARCHITECTUR
 - Dates use the phone's local day (the web uses UTC).
 - Streaks stay alive until the day ends (the web resets to 0 every morning).
 - Deleting a habit soft-deletes its logs first (the web leaves them alive).
-- Icon, kind, frequency, goal and time of day are local-only until the backend has those columns.
+- Icon, kind, frequency, goal, time of day and category are local-only until the backend has those columns.
 
 ## Credits
 

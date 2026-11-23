@@ -53,6 +53,7 @@ class HabitRepository(
                     goal = draft.goal,
                     startDate = LocalDate.now().toString(),
                     time = draft.time?.toStorage(),
+                    category = draft.category,
                 ),
             )
         } else {
@@ -67,6 +68,7 @@ class HabitRepository(
                     frequencyValue = frequencyValue,
                     goal = draft.goal,
                     time = draft.time?.toStorage(),
+                    category = draft.category,
                 ),
             )
         }
@@ -112,6 +114,7 @@ private fun HabitEntity.toModel() = Habit(
     startDate = runCatching { LocalDate.parse(startDate) }
         .getOrElse { runCatching { LocalDate.parse(createdAt.take(10)) }.getOrDefault(LocalDate.MIN) },
     time = time?.let { runCatching { LocalTime.parse(it) }.getOrNull() },
+    category = category,
 )
 
 private fun LocalTime.toStorage(): String = "%02d:%02d".format(hour, minute)

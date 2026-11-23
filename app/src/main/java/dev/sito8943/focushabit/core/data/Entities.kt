@@ -53,6 +53,8 @@ data class HabitEntity(
     val startDate: String = "",
     /** `HH:mm`, optional time of day. */
     val time: String? = null,
+    /** Optional free-text category. */
+    val category: String? = null,
 )
 
 /**

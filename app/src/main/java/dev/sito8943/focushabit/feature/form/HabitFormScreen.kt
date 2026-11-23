@@ -128,6 +128,8 @@ fun HabitFormScreen(
                 }
             }
 
+            CategoryCard(state, onChange)
+
             FocusCard(Modifier.fillMaxWidth()) {
                 SectionLabel(stringResource(R.string.form_kind))
                 Spacer(Modifier.height(10.dp))
@@ -428,5 +430,36 @@ private fun Stepper(
         }
         Spacer(Modifier.width(8.dp))
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+    }
+}
+
+/** Optional free-text category, with the ones already in use as quick picks. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CategoryCard(state: HabitFormState, onChange: ((HabitFormState) -> HabitFormState) -> Unit) {
+    FocusCard(Modifier.fillMaxWidth()) {
+        SectionLabel(stringResource(R.string.form_category))
+        Spacer(Modifier.height(10.dp))
+        CompactTextField(
+            value = state.category,
+            onValueChange = { value -> onChange { it.copy(category = value) } },
+            placeholder = stringResource(R.string.form_category_placeholder),
+            onDone = {},
+            modifier = Modifier.fillMaxWidth().height(FormHeight),
+        )
+        val current = state.category.trim()
+        if (state.categorySuggestions.isNotEmpty()) {
+            Spacer(Modifier.height(8.dp))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                state.categorySuggestions.forEach { category ->
+                    val selected = category.equals(current, ignoreCase = true)
+                    FilterChip(
+                        selected = selected,
+                        onClick = { onChange { it.copy(category = if (selected) "" else category) } },
+                        label = { Text(category) },
+                    )
+                }
+            }
+        }
     }
 }
