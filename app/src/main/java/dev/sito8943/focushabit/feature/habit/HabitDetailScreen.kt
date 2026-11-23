@@ -44,11 +44,16 @@ import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.DotGrid
+import dev.sito8943.focushabit.ui.patterns.CategoryLabel
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -76,14 +81,16 @@ fun HabitDetailScreen(
             }
             HabitTile(habit.name, habit.icon, habit.color, size = 40.dp)
             Spacer(Modifier.width(12.dp))
-            TitleText(
-                habit.name,
-                modifier = Modifier.weight(1f),
-                fontSize = 30.sp,
-                color = MaterialTheme.colorScheme.tertiary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Column(Modifier.weight(1f)) {
+                TitleText(
+                    habit.name,
+                    fontSize = 30.sp,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                state.category?.let { CategoryLabel(it) }
+            }
             IconButton(onClick = onEdit) {
                 FaIcon(Fa.Edit, stringResource(R.string.habit_edit))
             }
@@ -127,6 +134,19 @@ fun HabitDetailScreen(
                     highlight = state.today,
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
+            }
+
+            state.nextDue?.let { next ->
+                FocusCard(Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SectionLabel(stringResource(R.string.detail_next), Modifier.weight(1f))
+                        Text(
+                            nextDueText(next, state.today, habit.time),
+                            style = MaterialTheme.typography.bodyMedium,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                    }
+                }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -300,3 +320,14 @@ private fun unitText(unit: StreakUnit): String = stringResource(
         StreakUnit.Months -> R.string.unit_months
     },
 )
+
+/** "Today", "Tomorrow" or a short date, plus the habit's time if it has one. */
+@Composable
+private fun nextDueText(next: LocalDate, today: LocalDate, time: LocalTime?): String {
+    val day = when (next) {
+        today -> stringResource(R.string.detail_next_today)
+        today.plusDays(1) -> stringResource(R.string.detail_next_tomorrow)
+        else -> next.format(DateTimeFormatter.ofPattern("EEE d MMM", Locale.getDefault()))
+    }
+    return time?.let { "$day · ${it.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT))}" } ?: day
+}

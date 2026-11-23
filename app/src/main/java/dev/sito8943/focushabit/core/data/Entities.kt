@@ -51,6 +51,28 @@ data class HabitEntity(
     /** `YYYY-MM-DD`, local day the habit started counting. */
     @ColumnInfo(name = "start_date", defaultValue = "")
     val startDate: String = "",
+    /** `HH:mm`, optional time of day. */
+    val time: String? = null,
+    /** Optional [CategoryEntity] id; cleared by hand when the category is deleted. */
+    @ColumnInfo(name = "category_id")
+    val categoryId: Long? = null,
+)
+
+/** A user-defined group of habits. Local only: the server has no categories. */
+@Entity(tableName = "categories", indices = [Index(value = ["code"])])
+data class CategoryEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    /** Recovery code it belongs to, like the habits. */
+    val code: String,
+    val name: String,
+    val color: String,
+    val icon: String? = null,
+    @ColumnInfo(name = "created_at")
+    val createdAt: String,
+    /** Suggestion it came from while not renamed; the UI shows its translated name. */
+    @ColumnInfo(name = "prefab_key")
+    val prefabKey: String? = null,
 )
 
 /**

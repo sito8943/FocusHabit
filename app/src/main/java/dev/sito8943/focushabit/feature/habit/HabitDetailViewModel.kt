@@ -4,12 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.sito8943.focushabit.core.data.HabitRepository
 import dev.sito8943.focushabit.core.di.DateState
+import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.core.model.Habit
 import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.model.HabitSchedule
 import dev.sito8943.focushabit.core.model.Streak
 import dev.sito8943.focushabit.core.model.StreakUnit
 import dev.sito8943.focushabit.core.model.weekdayCounts
+import dev.sito8943.focushabit.core.settings.AppSettings
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -34,6 +36,9 @@ data class HabitDetailUiState(
     /** Build: done today. Quit: relapsed today. */
     val loggedToday: Boolean,
     val loading: Boolean,
+    /** Build habits: next day it is still to be done (today if pending). */
+    val nextDue: LocalDate? = null,
+    val category: Category? = null,
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -42,15 +47,22 @@ class HabitDetailViewModel(
     private val repository: HabitRepository,
     codeStore: SyncCodeStore,
     private val dates: DateState,
+    private val settings: AppSettings,
 ) : ViewModel() {
 
     val state: StateFlow<HabitDetailUiState> = codeStore.code
         .flatMapLatest { code ->
-            combine(repository.observeHabits(code), repository.observeLogs(code), dates.today) { habits, logs, today ->
+            combine(
+                repository.observeHabits(code),
+                repository.observeLogs(code),
+                dates.today,
+                settings.weekStart,
+                repository.observeCategories(code),
+            ) { habits, logs, today, weekStart, categories ->
                 val days = logs.filter { it.habitId == habitId }.mapTo(HashSet()) { it.date }
                 val habit = habits.firstOrNull { it.id == habitId }
                     ?: return@combine HabitDetailUiState(null, today, emptySet(), Streak(0, 0, StreakUnit.Days), 0, emptyMap(), false, loading = false)
-                val schedule = HabitSchedule(habit, days)
+                val schedule = HabitSchedule(habit, days, weekStart.dayOfWeek)
                 val good = if (habit.kind == HabitKind.Build) {
                     days
                 } else {
@@ -65,6 +77,8 @@ class HabitDetailViewModel(
                     weekdays = weekdayCounts(days, today),
                     loggedToday = today in days,
                     loading = false,
+                    nextDue = schedule.nextDue(today),
+                    category = categories.firstOrNull { it.id == habit.categoryId },
                 )
             }
         }

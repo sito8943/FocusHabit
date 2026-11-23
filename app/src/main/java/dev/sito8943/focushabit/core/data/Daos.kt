@@ -63,6 +63,28 @@ interface HabitDao {
 
     @Query(PENDING_COUNT)
     suspend fun pendingCount(): Int
+
+    @Query("UPDATE habits SET category_id = NULL WHERE category_id = :categoryId")
+    suspend fun clearCategory(categoryId: Long)
+}
+
+@Dao
+interface CategoryDao {
+
+    @Query("SELECT * FROM categories WHERE code = :code ORDER BY name COLLATE NOCASE, id")
+    fun observe(code: String): Flow<List<CategoryEntity>>
+
+    @Query("SELECT * FROM categories WHERE id = :id")
+    suspend fun get(id: Long): CategoryEntity?
+
+    @Insert
+    suspend fun insert(category: CategoryEntity): Long
+
+    @Update
+    suspend fun update(category: CategoryEntity)
+
+    @Query("DELETE FROM categories WHERE id = :id")
+    suspend fun delete(id: Long)
 }
 
 /** A log together with the server id of its habit, for the push. */

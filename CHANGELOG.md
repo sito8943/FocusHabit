@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.2.0
+
+- `ce20644` fix: N-per-week habits ignored the week start setting
+- `8b292e3` feat: optional time of day for habits
+- `51d50af` feat: show the next due day in the habit detail
+- `5579ba4` feat: optional category for habits
+- `b214df6` feat: sort and filter habits in Today
+- `79924d7` feat: remember the Today sort and filters
+- `ecc8a83` refactor: store categories in their own table
+- `055417b` feat: categories screen with CRUD and suggestions
+- `d57d01b` feat: group Today by category and show it on habits
+- `44434cf` feat: sticky day strip that shrinks on scroll
+- `1d049dd` feat: translate suggested categories with the app language
+
 ## 0.1.1
 
 - `501d83c` fix: habit form reopened with the previous habit and Save disabled

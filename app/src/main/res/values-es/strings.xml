@@ -55,6 +55,9 @@
         <item quantity="many">%1$d días completados</item>
         <item quantity="other">%1$d días completados</item>
     </plurals>
+    <string name="detail_next">Próximo día</string>
+    <string name="detail_next_today">Hoy</string>
+    <string name="detail_next_tomorrow">Mañana</string>
     <string name="detail_streak">Racha</string>
     <string name="detail_best">Mejor racha</string>
     <string name="detail_all_time">Récord histórico</string>
@@ -68,6 +71,19 @@
     <string name="celebrate_title">¡Buen trabajo!</string>
     <string name="celebrate_message">Todos los hábitos de hoy, hechos.</string>
     <string name="today_nothing_due">Nada pendiente este día.</string>
+    <string name="today_no_match">Ningún hábito coincide con los filtros.</string>
+    <string name="list_options">Ordenar y filtrar</string>
+    <string name="list_reset">Restablecer</string>
+    <string name="list_sort">Ordenar por</string>
+    <string name="list_sort_default">Hora</string>
+    <string name="list_sort_name">Nombre</string>
+    <string name="list_sort_status">Pendientes primero</string>
+    <string name="list_status">Estado</string>
+    <string name="list_status_all">Todos</string>
+    <string name="list_status_pending">Pendientes</string>
+    <string name="list_status_done">Hechos</string>
+    <string name="list_group_by_category">Agrupar</string>
+    <string name="list_no_category">Sin categoría</string>
     <string name="today_others">Otros días</string>
     <string name="goal_reached">Meta cumplida 🎉</string>
     <string name="goal_progress">%1$d/%2$d</string>
@@ -104,6 +120,25 @@
     <string name="freq_per_month_label">veces al mes</string>
     <string name="form_goal">Meta</string>
     <string name="form_goal_hint">Objetivo opcional a cumplir.</string>
+    <string name="form_category">Categoría</string>
+    <string name="form_category_manage">Gestionar</string>
+    <string name="categories_title">Categorías</string>
+    <string name="categories_new">Nueva categoría</string>
+    <string name="categories_edit">Editar categoría</string>
+    <string name="categories_name_placeholder">Nombre, p. ej. Salud</string>
+    <string name="categories_empty">Aún no hay categorías. Añade una con + o elige una sugerida.</string>
+    <string name="categories_suggested">Sugeridas</string>
+    <string name="categories_suggested_hint">Toca una para añadirla.</string>
+    <string name="categories_delete_title">¿Borrar «%1$s»?</string>
+    <string name="categories_delete_message">Sus hábitos se quedan, sin categoría.</string>
+    <string name="settings_categories_hint">Agrupa tus hábitos.</string>
+    <plurals name="categories_habit_count">
+        <item quantity="one">%1$d hábito</item>
+        <item quantity="many">%1$d hábitos</item>
+        <item quantity="other">%1$d hábitos</item>
+    </plurals>
+    <string name="form_time">Hora</string>
+    <string name="form_time_hint">Hora del día opcional; ordena la lista.</string>
     <string name="goal_build_label">veces en total</string>
     <string name="goal_quit_label">días seguidos sin hacerlo</string>
     <string name="detail_clean">Sin recaer</string>

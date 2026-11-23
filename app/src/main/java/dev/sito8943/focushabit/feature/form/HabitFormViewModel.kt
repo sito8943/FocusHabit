@@ -3,12 +3,14 @@ package dev.sito8943.focushabit.feature.form
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.sito8943.focushabit.core.data.HabitRepository
+import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.core.model.Frequency
 import dev.sito8943.focushabit.core.model.Habit
 import dev.sito8943.focushabit.core.model.HabitColors
 import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import java.time.DayOfWeek
+import java.time.LocalTime
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,6 +33,12 @@ data class HabitFormState(
     val perMonth: Int = 10,
     val goalEnabled: Boolean = false,
     val goal: Int = 30,
+    /** Null: no time of day. */
+    val time: LocalTime? = null,
+    /** Null: no category. */
+    val categoryId: Long? = null,
+    /** The user's categories, offered as chips. */
+    val categories: List<Category> = emptyList(),
     val saving: Boolean = false,
 ) {
     val canSave: Boolean
@@ -61,7 +69,15 @@ class HabitFormViewModel(
         if (habitId != null) {
             viewModelScope.launch {
                 val habit = repository.getHabit(habitId)
-                _state.value = habit?.toForm() ?: HabitFormState()
+                _state.update { (habit?.toForm() ?: HabitFormState()).copy(categories = it.categories) }
+            }
+        }
+        viewModelScope.launch {
+            repository.observeCategories(codeStore.code.value).collect { categories ->
+                _state.update { form ->
+                    // A category deleted meanwhile is no longer selectable.
+                    form.copy(categories = categories, categoryId = form.categoryId?.takeIf { id -> categories.any { it.id == id } })
+                }
             }
         }
     }
@@ -84,6 +100,8 @@ class HabitFormViewModel(
                     kind = form.kind,
                     frequency = form.frequency(),
                     goal = form.goal.takeIf { form.goalEnabled },
+                    time = form.time,
+                    categoryId = form.categoryId,
                 ),
             )
             onSaved()
@@ -99,6 +117,8 @@ private fun Habit.toForm(): HabitFormState {
         kind = kind,
         goalEnabled = goal != null,
         goal = goal ?: 30,
+        time = time,
+        categoryId = categoryId,
     )
     return when (val f = frequency) {
         Frequency.Daily -> base

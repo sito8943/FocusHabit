@@ -48,12 +48,11 @@ import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.core.di.AppContainer
 import dev.sito8943.focushabit.core.sync.SyncStatus
 import dev.sito8943.focushabit.feature.calendar.CalendarScreen
+import dev.sito8943.focushabit.feature.categories.CategoriesScreen
 import dev.sito8943.focushabit.feature.form.HabitFormScreen
 import dev.sito8943.focushabit.feature.recovery.RecoveryViewModel
 import dev.sito8943.focushabit.feature.settings.SettingsScreen
-import dev.sito8943.focushabit.core.settings.WeekStart
 import androidx.activity.compose.LocalActivity
-import java.time.DayOfWeek
 import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
@@ -67,6 +66,8 @@ fun MainScreen(container: AppContainer) {
     var tab by rememberSaveable { mutableStateOf(Tab.Today) }
     var showRecovery by rememberSaveable { mutableStateOf(false) }
     var showSettings by rememberSaveable { mutableStateOf(false) }
+    /** Over whatever opened it (Settings or the habit form), which stays below. */
+    var showCategories by rememberSaveable { mutableStateOf(false) }
     var openHabit by rememberSaveable { mutableStateOf<Long?>(null) }
     /** Habit form: [NEW_HABIT] to create, an id to edit, null when closed. */
     var form by rememberSaveable { mutableStateOf<Long?>(null) }
@@ -96,13 +97,28 @@ fun MainScreen(container: AppContainer) {
 
     BackHandler(enabled = tab != Tab.Today) { tab = Tab.Today }
 
+    if (showCategories) {
+        CategoriesRoute(container, onClose = { showCategories = false })
+        return
+    }
     if (showSettings) {
-        SettingsRoute(container, onClose = { showSettings = false }, onRecoveryCode = { showRecovery = true })
+        SettingsRoute(
+            container,
+            onClose = { showSettings = false },
+            onRecoveryCode = { showRecovery = true },
+            onCategories = { showCategories = true },
+        )
         RecoveryHost(showRecovery, recovery) { showRecovery = false }
         return
     }
     form?.let { target ->
-        HabitFormRoute(container, target.takeIf { it != NEW_HABIT }, formSession, onClose = { form = null })
+        HabitFormRoute(
+            container,
+            target.takeIf { it != NEW_HABIT },
+            formSession,
+            onClose = { form = null },
+            onManageCategories = { showCategories = true },
+        )
         return
     }
     openHabit?.let { habitId ->
@@ -176,6 +192,7 @@ fun MainScreen(container: AppContainer) {
                         onOpen = { openHabit = it },
                         onSelectDay = today::select,
                         onBackToToday = today::backToToday,
+                        onOptions = today::setOptions,
                     )
                 }
 
@@ -184,7 +201,7 @@ fun MainScreen(container: AppContainer) {
                     val weekStart by container.settings.weekStart.collectAsStateWithLifecycle()
                     CalendarScreen(
                         state = state,
-                        weekStart = if (weekStart == WeekStart.Monday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY,
+                        weekStart = weekStart.dayOfWeek,
                         onPrevious = calendar::previousMonth,
                         onNext = calendar::nextMonth,
                         onSelect = { day ->
@@ -201,7 +218,12 @@ fun MainScreen(container: AppContainer) {
 }
 
 @Composable
-private fun SettingsRoute(container: AppContainer, onClose: () -> Unit, onRecoveryCode: () -> Unit) {
+private fun SettingsRoute(
+    container: AppContainer,
+    onClose: () -> Unit,
+    onRecoveryCode: () -> Unit,
+    onCategories: () -> Unit,
+) {
     val settings = container.settings
     val language by settings.language.collectAsStateWithLifecycle()
     val theme by settings.theme.collectAsStateWithLifecycle()
@@ -222,8 +244,26 @@ private fun SettingsRoute(container: AppContainer, onClose: () -> Unit, onRecove
             onTheme = settings::setTheme,
             onWeekStart = settings::setWeekStart,
             onRecoveryCode = onRecoveryCode,
+            onCategories = onCategories,
             onBack = onClose,
             modifier = Modifier.safeDrawingPadding(),
+        )
+    }
+}
+
+@Composable
+private fun CategoriesRoute(container: AppContainer, onClose: () -> Unit) {
+    val vm = viewModel { container.createCategoriesViewModel() }
+    val state by vm.state.collectAsStateWithLifecycle()
+    BackHandler(onBack = onClose)
+    Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        CategoriesScreen(
+            state = state,
+            onSave = vm::save,
+            onDelete = vm::delete,
+            onAddPrefab = vm::addPrefab,
+            onBack = onClose,
+            modifier = Modifier.safeDrawingPadding().imePadding(),
         )
     }
 }
@@ -268,7 +308,13 @@ private fun RowScope.TabItem(target: Tab, current: Tab, icon: String, label: Int
 }
 
 @Composable
-private fun HabitFormRoute(container: AppContainer, habitId: Long?, session: Int, onClose: () -> Unit) {
+private fun HabitFormRoute(
+    container: AppContainer,
+    habitId: Long?,
+    session: Int,
+    onClose: () -> Unit,
+    onManageCategories: () -> Unit,
+) {
     val vm = viewModel(key = "form-${habitId ?: "new"}-$session") { container.createHabitFormViewModel(habitId) }
     val state by vm.state.collectAsStateWithLifecycle()
     BackHandler(onBack = onClose)
@@ -279,6 +325,7 @@ private fun HabitFormRoute(container: AppContainer, habitId: Long?, session: Int
             onChange = vm::update,
             onSave = { vm.save(onClose) },
             onClose = onClose,
+            onManageCategories = onManageCategories,
             modifier = Modifier.safeDrawingPadding().imePadding(),
         )
     }

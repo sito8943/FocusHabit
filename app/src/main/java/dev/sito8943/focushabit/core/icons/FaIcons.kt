@@ -125,6 +125,8 @@ object Fa {
     const val Settings = "gear"
     const val Sync = "arrows-rotate"
     const val BackToToday = "rotate-left"
+    const val Filter = "sliders"
+    const val Tag = "tag"
 }
 
 /**

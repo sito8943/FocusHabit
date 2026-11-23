@@ -2,6 +2,7 @@ package dev.sito8943.focushabit.core.settings
 
 import android.content.Context
 import android.content.res.Configuration
+import java.time.DayOfWeek
 import java.util.Locale
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,10 @@ enum class AppLanguage(val storage: String, val tag: String?) {
 
 enum class ThemeMode(val storage: String) { System("system"), Light("light"), Dark("dark") }
 
-enum class WeekStart(val storage: String) { Sunday("sunday"), Monday("monday") }
+enum class WeekStart(val storage: String, val dayOfWeek: DayOfWeek) {
+    Sunday("sunday", DayOfWeek.SUNDAY),
+    Monday("monday", DayOfWeek.MONDAY),
+}
 
 /** Device preferences (not synced). */
 class AppSettings(context: Context) {

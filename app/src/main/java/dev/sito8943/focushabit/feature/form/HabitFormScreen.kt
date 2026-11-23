@@ -21,6 +21,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -31,6 +32,9 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,8 +55,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
-import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.core.icons.FaGlyph
+import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.core.icons.FaIcons
 import dev.sito8943.focushabit.core.model.HabitColors
 import dev.sito8943.focushabit.core.model.HabitKind
@@ -61,9 +65,13 @@ import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.FormHeight
 import dev.sito8943.focushabit.ui.patterns.HabitTile
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
+import dev.sito8943.focushabit.ui.patterns.label
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
 import java.time.DayOfWeek
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -75,6 +83,7 @@ fun HabitFormScreen(
     onChange: ((HabitFormState) -> HabitFormState) -> Unit,
     onSave: () -> Unit,
     onClose: () -> Unit,
+    onManageCategories: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -120,6 +129,8 @@ fun HabitFormScreen(
                     )
                 }
             }
+
+            CategoryCard(state, onChange, onManageCategories)
 
             FocusCard(Modifier.fillMaxWidth()) {
                 SectionLabel(stringResource(R.string.form_kind))
@@ -183,7 +194,57 @@ fun HabitFormScreen(
                     )
                 }
             }
+
+            TimeCard(state.time) { time -> onChange { it.copy(time = time) } }
         }
+    }
+}
+
+/** Optional time of day: a switch, the chosen time and a picker dialog. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TimeCard(time: LocalTime?, onTime: (LocalTime?) -> Unit) {
+    var picking by rememberSaveable { mutableStateOf(false) }
+    FocusCard(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                SectionLabel(stringResource(R.string.form_time))
+                Text(
+                    stringResource(R.string.form_time_hint),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(
+                checked = time != null,
+                onCheckedChange = { on -> if (on) picking = true else onTime(null) },
+            )
+        }
+        AnimatedVisibility(time != null) {
+            TextButton(onClick = { picking = true }, modifier = Modifier.padding(top = 4.dp)) {
+                Text(
+                    time?.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)).orEmpty(),
+                    style = MaterialTheme.typography.titleLarge,
+                )
+            }
+        }
+    }
+    if (picking) {
+        val initial = time ?: LocalTime.of(9, 0)
+        val picker = rememberTimePickerState(initial.hour, initial.minute)
+        AlertDialog(
+            onDismissRequest = { picking = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    onTime(LocalTime.of(picker.hour, picker.minute))
+                    picking = false
+                }) { Text(stringResource(android.R.string.ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { picking = false }) { Text(stringResource(android.R.string.cancel)) }
+            },
+            text = { TimePicker(picker) },
+        )
     }
 }
 
@@ -259,7 +320,7 @@ private fun FrequencyCard(state: HabitFormState, onChange: ((HabitFormState) -> 
 /** Suggested icons, a search over the ~1400 of Font Awesome, and "none" (the initial). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun IconPicker(selected: String?, color: String, onSelect: (String?) -> Unit) {
+internal fun IconPicker(selected: String?, color: String, onSelect: (String?) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     val results = remember(query) { FaIcons.search(query) }
     val tint = FocusColors.parse(color)
@@ -326,7 +387,7 @@ private fun IconCell(
 }
 
 @Composable
-private fun ColorDot(hex: String, selected: Boolean, onClick: () -> Unit) {
+internal fun ColorDot(hex: String, selected: Boolean, onClick: () -> Unit) {
     val description = stringResource(R.string.habit_select_color, hex)
     Box(
         Modifier
@@ -371,5 +432,43 @@ private fun Stepper(
         }
         Spacer(Modifier.width(8.dp))
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+    }
+}
+
+/** Optional category: "None" or one of the user's categories. */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun CategoryCard(
+    state: HabitFormState,
+    onChange: ((HabitFormState) -> HabitFormState) -> Unit,
+    onManage: () -> Unit,
+) {
+    FocusCard(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SectionLabel(stringResource(R.string.form_category), Modifier.weight(1f))
+            TextButton(onClick = onManage) { Text(stringResource(R.string.form_category_manage)) }
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = state.categoryId == null,
+                onClick = { onChange { it.copy(categoryId = null) } },
+                label = { Text(stringResource(R.string.list_no_category)) },
+            )
+            state.categories.forEach { category ->
+                FilterChip(
+                    selected = state.categoryId == category.id,
+                    onClick = { onChange { it.copy(categoryId = category.id) } },
+                    label = { Text(category.label()) },
+                    leadingIcon = {
+                        FaIcon(
+                            category.icon ?: Fa.Tag,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = FocusColors.parse(category.color),
+                        )
+                    },
+                )
+            }
+        }
     }
 }

@@ -55,6 +55,9 @@
         <item quantity="one">%1$d day completed</item>
         <item quantity="other">%1$d days completed</item>
     </plurals>
+    <string name="detail_next">Next</string>
+    <string name="detail_next_today">Today</string>
+    <string name="detail_next_tomorrow">Tomorrow</string>
     <string name="detail_streak">Streak</string>
     <string name="detail_best">Best streak</string>
     <string name="detail_all_time">All-time record</string>
@@ -68,6 +71,19 @@
     <string name="celebrate_title">Good job!</string>
     <string name="celebrate_message">Every habit done today.</string>
     <string name="today_nothing_due">Nothing due this day.</string>
+    <string name="today_no_match">No habits match the filters.</string>
+    <string name="list_options">Sort and filter</string>
+    <string name="list_reset">Reset</string>
+    <string name="list_sort">Sort by</string>
+    <string name="list_sort_default">Time</string>
+    <string name="list_sort_name">Name</string>
+    <string name="list_sort_status">Pending first</string>
+    <string name="list_status">Status</string>
+    <string name="list_status_all">All</string>
+    <string name="list_status_pending">Pending</string>
+    <string name="list_status_done">Done</string>
+    <string name="list_group_by_category">Group</string>
+    <string name="list_no_category">No category</string>
     <string name="today_others">Other days</string>
     <string name="goal_reached">Goal reached 🎉</string>
     <string name="goal_progress">%1$d/%2$d</string>
@@ -104,6 +120,24 @@
     <string name="freq_per_month_label">times a month</string>
     <string name="form_goal">Goal</string>
     <string name="form_goal_hint">Optional target to reach.</string>
+    <string name="form_category">Category</string>
+    <string name="form_category_manage">Manage</string>
+    <string name="categories_title">Categories</string>
+    <string name="categories_new">New category</string>
+    <string name="categories_edit">Edit category</string>
+    <string name="categories_name_placeholder">Name, e.g. Health</string>
+    <string name="categories_empty">No categories yet. Add one with + or pick a suggestion.</string>
+    <string name="categories_suggested">Suggestions</string>
+    <string name="categories_suggested_hint">Tap one to add it.</string>
+    <string name="categories_delete_title">Delete "%1$s"?</string>
+    <string name="categories_delete_message">Its habits stay, without a category.</string>
+    <string name="settings_categories_hint">Group your habits.</string>
+    <plurals name="categories_habit_count">
+        <item quantity="one">%1$d habit</item>
+        <item quantity="other">%1$d habits</item>
+    </plurals>
+    <string name="form_time">Time</string>
+    <string name="form_time_hint">Optional time of day; orders the list.</string>
     <string name="goal_build_label">times in total</string>
     <string name="goal_quit_label">days in a row without it</string>
     <string name="detail_clean">Clean</string>

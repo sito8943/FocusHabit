@@ -1,12 +1,15 @@
 package dev.sito8943.focushabit.core.data
 
 import androidx.room.withTransaction
+import dev.sito8943.focushabit.core.model.Category
+import dev.sito8943.focushabit.core.model.keepPrefabKey
 import dev.sito8943.focushabit.core.model.Frequency
 import dev.sito8943.focushabit.core.model.Habit
 import dev.sito8943.focushabit.core.model.HabitKind
 import dev.sito8943.focushabit.core.model.HabitLog
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -21,9 +24,46 @@ class HabitRepository(
 
     private val habits = database.habits()
     private val logs = database.logs()
+    private val categories = database.categories()
 
     fun observeHabits(code: String): Flow<List<Habit>> =
         habits.observeActive(code).map { rows -> rows.map { it.toModel() } }
+
+    fun observeCategories(code: String): Flow<List<Category>> =
+        categories.observe(code).map { rows -> rows.map { Category(it.id, it.name, it.color, it.icon, it.prefabKey) } }
+
+    /** New category when [Category.id] is 0, otherwise an edit. Returns its id. */
+    suspend fun saveCategory(code: String, category: Category): Long {
+        if (category.id == 0L) {
+            return categories.insert(
+                CategoryEntity(
+                    code = code,
+                    name = category.name,
+                    color = category.color,
+                    icon = category.icon,
+                    prefabKey = keepPrefabKey(category.prefabKey, category.name),
+                    createdAt = now().toString(),
+                ),
+            )
+        }
+        val current = categories.get(category.id) ?: return category.id
+        categories.update(
+            current.copy(
+                name = category.name,
+                color = category.color,
+                icon = category.icon,
+                // A rename to anything but the suggestion's name (in either language) makes it a plain name.
+                prefabKey = keepPrefabKey(current.prefabKey, category.name),
+            ),
+        )
+        return category.id
+    }
+
+    /** Its habits stay, without a category. */
+    suspend fun deleteCategory(id: Long) = database.withTransaction {
+        habits.clearCategory(id)
+        categories.delete(id)
+    }
 
     suspend fun getHabit(id: Long): Habit? = habits.get(id)?.takeIf { it.deletedAt == null }?.toModel()
 
@@ -51,6 +91,8 @@ class HabitRepository(
                     frequencyValue = frequencyValue,
                     goal = draft.goal,
                     startDate = LocalDate.now().toString(),
+                    time = draft.time?.toStorage(),
+                    categoryId = draft.categoryId,
                 ),
             )
         } else {
@@ -64,6 +106,8 @@ class HabitRepository(
                     frequency = frequency,
                     frequencyValue = frequencyValue,
                     goal = draft.goal,
+                    time = draft.time?.toStorage(),
+                    categoryId = draft.categoryId,
                 ),
             )
         }
@@ -108,4 +152,8 @@ private fun HabitEntity.toModel() = Habit(
     goal = goal,
     startDate = runCatching { LocalDate.parse(startDate) }
         .getOrElse { runCatching { LocalDate.parse(createdAt.take(10)) }.getOrDefault(LocalDate.MIN) },
+    time = time?.let { runCatching { LocalTime.parse(it) }.getOrNull() },
+    categoryId = categoryId,
 )
+
+private fun LocalTime.toStorage(): String = "%02d:%02d".format(hour, minute)
