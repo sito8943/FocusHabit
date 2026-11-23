@@ -1,11 +1,8 @@
 package dev.sito8943.focushabit.feature.today
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.ui.draw.rotate
-import dev.sito8943.focushabit.ui.patterns.HeatLegend
-import dev.sito8943.focushabit.ui.patterns.Heatmap
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -30,27 +27,24 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.ui.draw.alpha
-import dev.sito8943.focushabit.core.model.HabitKind
-import dev.sito8943.focushabit.core.model.PeriodProgress
-import dev.sito8943.focushabit.core.model.Streak
-import dev.sito8943.focushabit.core.model.StreakUnit
-import dev.sito8943.focushabit.ui.patterns.HabitTile
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
@@ -66,14 +60,22 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
-import dev.sito8943.focushabit.core.model.Category
-import dev.sito8943.focushabit.ui.patterns.CategoryLabel
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
+import dev.sito8943.focushabit.core.model.Category
+import dev.sito8943.focushabit.core.model.HabitKind
+import dev.sito8943.focushabit.core.model.PeriodProgress
+import dev.sito8943.focushabit.core.model.Streak
+import dev.sito8943.focushabit.core.model.StreakUnit
+import dev.sito8943.focushabit.ui.patterns.CategoryLabel
 import dev.sito8943.focushabit.ui.patterns.Celebration
 import dev.sito8943.focushabit.ui.patterns.FocusCard
+import dev.sito8943.focushabit.ui.patterns.HabitTile
+import dev.sito8943.focushabit.ui.patterns.HeatLegend
+import dev.sito8943.focushabit.ui.patterns.Heatmap
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.patterns.TitleText
 import dev.sito8943.focushabit.ui.theme.FocusColors
@@ -112,15 +114,34 @@ fun TodayScreen(
         previous = state.date to allDone
     }
 
+    val listState = rememberLazyListState()
+    // The day strip (item 1) sticks on top; once content scrolls under it, it shrinks.
+    val stripCollapsed by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 1 ||
+                (listState.firstVisibleItemIndex == 1 && listState.firstVisibleItemScrollOffset > 0)
+        }
+    }
+    val collapse by animateFloatAsState(if (stripCollapsed) 1f else 0f, label = "strip")
+
     Box(modifier.fillMaxSize()) {
     Column(Modifier.fillMaxSize()) {
         LazyColumn(
+            state = listState,
             modifier = Modifier.weight(1f),
             contentPadding = PaddingValues(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item(key = "header") { DayHeader(state, onBackToToday) }
-            item(key = "strip") { WeekStrip(state, onSelectDay) }
+            stickyHeader(key = "strip") {
+                Surface(
+                    color = MaterialTheme.colorScheme.background,
+                    shadowElevation = 3.dp * collapse,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    WeekStrip(state, onSelectDay, collapse, Modifier.padding(vertical = 4.dp))
+                }
+            }
             item(key = "hero") { ProgressAccordion(state, Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) }
             item(key = "label") {
                 Row(
@@ -259,7 +280,13 @@ private const val FUTURE_DAYS = 7L
 
 /** Horizontal day picker: green = done (stronger when everything is), navy = selected, gold ring = today. */
 @Composable
-private fun WeekStrip(state: TodayUiState, onSelect: (LocalDate) -> Unit) {
+private fun WeekStrip(
+    state: TodayUiState,
+    onSelect: (LocalDate) -> Unit,
+    /** 0 = full size, 1 = compact (number only). */
+    collapse: Float,
+    modifier: Modifier = Modifier,
+) {
     val first = state.today.minusDays(PAST_DAYS)
     val days = (0..PAST_DAYS + FUTURE_DAYS).map { first.plusDays(it) }
     val selectedIndex = days.indexOf(state.date)
@@ -276,6 +303,7 @@ private fun WeekStrip(state: TodayUiState, onSelect: (LocalDate) -> Unit) {
     val locale = Locale.getDefault()
     LazyRow(
         state = listState,
+        modifier = modifier,
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -299,7 +327,7 @@ private fun WeekStrip(state: TodayUiState, onSelect: (LocalDate) -> Unit) {
                         BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)
                     else -> null
                 },
-                modifier = Modifier.width(52.dp).height(68.dp),
+                modifier = Modifier.width(lerp(52.dp, 44.dp, collapse)).height(lerp(68.dp, 40.dp, collapse)),
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -310,10 +338,16 @@ private fun WeekStrip(state: TodayUiState, onSelect: (LocalDate) -> Unit) {
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
-                    Text(
-                        day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).trimEnd('.'),
-                        style = MaterialTheme.typography.labelSmall,
-                    )
+                    if (collapse < 1f) {
+                        Text(
+                            day.dayOfWeek.getDisplayName(TextStyle.SHORT, locale).trimEnd('.'),
+                            style = MaterialTheme.typography.labelSmall,
+                            maxLines = 1,
+                            modifier = Modifier
+                                .height(lerp(16.dp, 0.dp, collapse))
+                                .alpha(1f - collapse),
+                        )
+                    }
                 }
             }
         }
