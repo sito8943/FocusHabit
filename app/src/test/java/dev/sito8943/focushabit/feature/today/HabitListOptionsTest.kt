@@ -30,11 +30,10 @@ class HabitListOptionsTest {
     fun `default keeps the incoming order`() = assertEquals(listOf(1L, 2L, 3L), ids(HabitListOptions()))
 
     @Test
-    fun `sorts by name ignoring case, status, frequency and category with none last`() {
+    fun `sorts by name ignoring case, status and frequency`() {
         assertEquals(listOf(3L, 1L, 2L), ids(HabitListOptions(sort = HabitSort.Name)))
         assertEquals(listOf(2L, 3L, 1L), ids(HabitListOptions(sort = HabitSort.Status)))
         assertEquals(listOf(2L, 3L, 1L), ids(HabitListOptions(sort = HabitSort.Frequency)))
-        assertEquals(listOf(3L, 1L, 2L), ids(HabitListOptions(sort = HabitSort.Category)))
     }
 
     @Test
@@ -45,5 +44,14 @@ class HabitListOptionsTest {
         assertEquals(listOf(3L), ids(HabitListOptions(status = StatusFilter.Pending, categories = setOf(20L, 10L))))
         assertEquals(listOf(1L, 3L), ids(HabitListOptions(frequencies = setOf(FrequencyKind.PerWeek, FrequencyKind.Weekdays))))
         assertEquals(2, HabitListOptions(status = StatusFilter.Done, frequencies = setOf(FrequencyKind.Daily)).activeFilters)
+    }
+
+    @Test
+    fun `groups follow the category order with no category last`() {
+        val groups = groupByCategory(rows, listOf(health, mind))
+        assertEquals(listOf(health, mind, null), groups.map { it.first })
+        assertEquals(listOf(listOf(3L), listOf(1L), listOf(2L)), groups.map { g -> g.second.map { it.id } })
+        // Unknown category counts as none; empty groups disappear.
+        assertEquals(listOf(null to listOf(1L, 2L, 3L)), groupByCategory(rows, emptyList()).map { it.first to it.second.map { r -> r.id } })
     }
 }

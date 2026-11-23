@@ -20,6 +20,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -122,7 +123,15 @@ fun HabitListOptionsSheet(
 
             if (state.categories.isNotEmpty()) {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SectionLabel(stringResource(R.string.form_category))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        SectionLabel(stringResource(R.string.form_category), Modifier.weight(1f))
+                        Text(stringResource(R.string.list_group_by_category), style = MaterialTheme.typography.bodyMedium)
+                        Switch(
+                            checked = options.groupByCategory,
+                            onCheckedChange = { onChange(options.copy(groupByCategory = it)) },
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         val choices: List<Category?> = state.categories + if (state.hasUncategorized) listOf(null) else emptyList()
                         choices.forEach { category ->
@@ -149,7 +158,6 @@ private val HabitSort.label: Int
         HabitSort.Name -> R.string.list_sort_name
         HabitSort.Status -> R.string.list_sort_status
         HabitSort.Frequency -> R.string.form_frequency
-        HabitSort.Category -> R.string.form_category
     }
 
 private val StatusFilter.label: Int

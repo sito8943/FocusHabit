@@ -69,6 +69,9 @@ data class TodayUiState(
     val visibleHabits: List<HabitRow> get() = options.apply(habits)
     val visibleOthers: List<HabitRow> get() = options.apply(others)
 
+    /** True when the main list is shown in one section per category. */
+    val grouped: Boolean get() = options.groupByCategory && categories.isNotEmpty()
+
     val isToday: Boolean get() = date == today
     private val counted get() = habits.filter { it.required }
     val doneCount: Int get() = counted.count { it.done }

@@ -18,6 +18,7 @@ class HabitListOptionsStore(context: Context) {
             .putString(KEY_SORT, value.sort.name)
             .putString(KEY_STATUS, value.status.name)
             .putStringSet(KEY_FREQUENCIES, value.frequencies.mapTo(HashSet()) { it.name })
+            .putBoolean(KEY_GROUP, value.groupByCategory)
             .putStringSet(KEY_CATEGORIES, value.categories.mapTo(HashSet()) { it?.toString() ?: NO_CATEGORY })
             .apply()
         _options.value = value
@@ -31,6 +32,7 @@ class HabitListOptionsStore(context: Context) {
         categories = prefs.getStringSet(KEY_CATEGORIES, null).orEmpty()
             .filter { it == NO_CATEGORY || it.toLongOrNull() != null }
             .mapTo(HashSet()) { it.toLongOrNull() }, // NO_CATEGORY -> null
+        groupByCategory = prefs.getBoolean(KEY_GROUP, true),
     )
 
     private companion object {
@@ -39,6 +41,7 @@ class HabitListOptionsStore(context: Context) {
         const val KEY_STATUS = "status"
         const val KEY_FREQUENCIES = "frequencies"
         const val KEY_CATEGORIES = "categories"
+        const val KEY_GROUP = "group_by_category"
         const val NO_CATEGORY = ""
     }
 }

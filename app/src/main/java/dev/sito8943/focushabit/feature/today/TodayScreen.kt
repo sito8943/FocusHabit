@@ -68,6 +68,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dev.sito8943.focushabit.R
+import dev.sito8943.focushabit.core.model.Category
+import dev.sito8943.focushabit.ui.patterns.CategoryLabel
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.Celebration
@@ -147,13 +149,30 @@ fun TodayScreen(
                     )
                 }
             }
-            items(visibleHabits, key = { it.id }) { habit ->
-                HabitItem(
-                    habit = habit,
-                    onToggle = { onToggle(habit.id) },
-                    onOpen = { onOpen(habit.id) },
-                    modifier = Modifier.padding(horizontal = 16.dp).animateItem(),
-                )
+            if (state.grouped) {
+                groupByCategory(visibleHabits, state.categories).forEach { (category, group) ->
+                    item(key = "group-${category?.id ?: "none"}") {
+                        CategoryHeader(category, group, Modifier.padding(start = 20.dp, end = 20.dp, top = 6.dp).animateItem())
+                    }
+                    items(group, key = { it.id }) { habit ->
+                        HabitItem(
+                            habit = habit,
+                            onToggle = { onToggle(habit.id) },
+                            onOpen = { onOpen(habit.id) },
+                            showCategory = false,
+                            modifier = Modifier.padding(horizontal = 16.dp).animateItem(),
+                        )
+                    }
+                }
+            } else {
+                items(visibleHabits, key = { it.id }) { habit ->
+                    HabitItem(
+                        habit = habit,
+                        onToggle = { onToggle(habit.id) },
+                        onOpen = { onOpen(habit.id) },
+                        modifier = Modifier.padding(horizontal = 16.dp).animateItem(),
+                    )
+                }
             }
             if (visibleOthers.isNotEmpty()) {
                 item(key = "others-label") {
@@ -370,6 +389,8 @@ private fun HabitItem(
     onToggle: () -> Unit,
     onOpen: () -> Unit,
     modifier: Modifier = Modifier,
+    /** Off inside a category section, where the header already says it. */
+    showCategory: Boolean = true,
 ) {
     val color = FocusColors.parse(habit.color)
     val quit = habit.kind == HabitKind.Quit
@@ -393,6 +414,16 @@ private fun HabitItem(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (showCategory) {
+                        habit.category?.let { category ->
+                            CategoryLabel(category, Modifier.weight(1f, fill = false))
+                            Text(
+                                " · ",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                     if (habit.streak.current > 0) {
                         FaIcon(
                             if (quit) Fa.Shield else Fa.Fire,
@@ -512,5 +543,27 @@ private fun CheckSquare(checked: Boolean, color: Color, label: String, onToggle:
         ) {
             if (checked) FaIcon(Fa.Check, null, tint = Color.White, modifier = Modifier.size(20.dp))
         }
+    }
+}
+
+/** Section title of a category in Today: icon and name (or "No category") and done/total. */
+@Composable
+private fun CategoryHeader(category: Category?, rows: List<HabitRow>, modifier: Modifier = Modifier) {
+    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        if (category != null) {
+            CategoryLabel(category, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge)
+        } else {
+            Text(
+                stringResource(R.string.list_no_category),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+        }
+        Text(
+            "${rows.count { it.done }}/${rows.size}",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }

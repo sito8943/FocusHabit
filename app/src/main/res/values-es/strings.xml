@@ -82,6 +82,7 @@
     <string name="list_status_all">Todos</string>
     <string name="list_status_pending">Pendientes</string>
     <string name="list_status_done">Hechos</string>
+    <string name="list_group_by_category">Agrupar</string>
     <string name="list_no_category">Sin categoría</string>
     <string name="today_others">Otros días</string>
     <string name="goal_reached">Meta cumplida 🎉</string>

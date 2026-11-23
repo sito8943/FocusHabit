@@ -1,5 +1,6 @@
 package dev.sito8943.focushabit.feature.today
 
+import dev.sito8943.focushabit.core.model.Category
 import dev.sito8943.focushabit.core.model.Frequency
 
 /** Frequency families, for sorting and filtering (quit habits are daily). */
@@ -18,7 +19,7 @@ enum class FrequencyKind {
 }
 
 /** Default: time of day first (earliest first), then creation order. */
-enum class HabitSort { Default, Name, Status, Frequency, Category }
+enum class HabitSort { Default, Name, Status, Frequency }
 
 enum class StatusFilter { All, Pending, Done }
 
@@ -31,6 +32,8 @@ data class HabitListOptions(
     val status: StatusFilter = StatusFilter.All,
     val frequencies: Set<FrequencyKind> = emptySet(),
     val categories: Set<Long?> = emptySet(),
+    /** Today's list in one section per category (when there are categories). */
+    val groupByCategory: Boolean = true,
 ) {
     /** Number of active filters (sort not included), for the badge. */
     val activeFilters: Int
@@ -56,7 +59,18 @@ data class HabitListOptions(
             HabitSort.Name -> filtered.sortedBy { it.name.lowercase() }
             HabitSort.Status -> filtered.sortedBy { it.done }
             HabitSort.Frequency -> filtered.sortedBy { it.frequency }
-            HabitSort.Category -> filtered.sortedWith(compareBy(nullsLast()) { it.category?.name?.lowercase() })
         }
+    }
+}
+
+/**
+ * [rows] split by category, in [categories] order, "no category" last. Rows
+ * whose category is unknown count as "no category". Empty groups are dropped.
+ */
+fun groupByCategory(rows: List<HabitRow>, categories: List<Category>): List<Pair<Category?, List<HabitRow>>> {
+    val byId = rows.groupBy { row -> row.category?.id?.takeIf { id -> categories.any { it.id == id } } }
+    return (categories.map { it.id } + listOf(null)).mapNotNull { id ->
+        val group = byId[id] ?: return@mapNotNull null
+        categories.firstOrNull { it.id == id } to group
     }
 }

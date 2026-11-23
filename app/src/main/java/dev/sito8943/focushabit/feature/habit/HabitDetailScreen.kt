@@ -44,6 +44,7 @@ import dev.sito8943.focushabit.R
 import dev.sito8943.focushabit.core.icons.Fa
 import dev.sito8943.focushabit.core.icons.FaIcon
 import dev.sito8943.focushabit.ui.patterns.DotGrid
+import dev.sito8943.focushabit.ui.patterns.CategoryLabel
 import dev.sito8943.focushabit.ui.patterns.FocusCard
 import dev.sito8943.focushabit.ui.patterns.SectionLabel
 import dev.sito8943.focushabit.ui.patterns.TitleText
@@ -80,14 +81,16 @@ fun HabitDetailScreen(
             }
             HabitTile(habit.name, habit.icon, habit.color, size = 40.dp)
             Spacer(Modifier.width(12.dp))
-            TitleText(
-                habit.name,
-                modifier = Modifier.weight(1f),
-                fontSize = 30.sp,
-                color = MaterialTheme.colorScheme.tertiary,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Column(Modifier.weight(1f)) {
+                TitleText(
+                    habit.name,
+                    fontSize = 30.sp,
+                    color = MaterialTheme.colorScheme.tertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                state.category?.let { CategoryLabel(it) }
+            }
             IconButton(onClick = onEdit) {
                 FaIcon(Fa.Edit, stringResource(R.string.habit_edit))
             }

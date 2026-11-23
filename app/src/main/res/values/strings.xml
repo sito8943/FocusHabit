@@ -82,6 +82,7 @@
     <string name="list_status_all">All</string>
     <string name="list_status_pending">Pending</string>
     <string name="list_status_done">Done</string>
+    <string name="list_group_by_category">Group</string>
     <string name="list_no_category">No category</string>
     <string name="today_others">Other days</string>
     <string name="goal_reached">Goal reached 🎉</string>
