@@ -51,9 +51,7 @@ import dev.sito8943.focushabit.feature.calendar.CalendarScreen
 import dev.sito8943.focushabit.feature.form.HabitFormScreen
 import dev.sito8943.focushabit.feature.recovery.RecoveryViewModel
 import dev.sito8943.focushabit.feature.settings.SettingsScreen
-import dev.sito8943.focushabit.core.settings.WeekStart
 import androidx.activity.compose.LocalActivity
-import java.time.DayOfWeek
 import dev.sito8943.focushabit.feature.habit.HabitDetailScreen
 import dev.sito8943.focushabit.feature.recovery.RecoverySheet
 import dev.sito8943.focushabit.feature.today.TodayScreen
@@ -184,7 +182,7 @@ fun MainScreen(container: AppContainer) {
                     val weekStart by container.settings.weekStart.collectAsStateWithLifecycle()
                     CalendarScreen(
                         state = state,
-                        weekStart = if (weekStart == WeekStart.Monday) DayOfWeek.MONDAY else DayOfWeek.SUNDAY,
+                        weekStart = weekStart.dayOfWeek,
                         onPrevious = calendar::previousMonth,
                         onNext = calendar::nextMonth,
                         onSelect = { day ->

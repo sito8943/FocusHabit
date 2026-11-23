@@ -77,12 +77,12 @@ class AppContainer(context: Context) {
         )
     }
 
-    fun createTodayViewModel() = TodayViewModel(repository, codeStore, dates)
+    fun createTodayViewModel() = TodayViewModel(repository, codeStore, dates, settings)
 
     fun createCalendarViewModel() = CalendarViewModel(repository, codeStore, dates)
 
     fun createHabitDetailViewModel(habitId: Long) =
-        HabitDetailViewModel(habitId, repository, codeStore, dates)
+        HabitDetailViewModel(habitId, repository, codeStore, dates, settings)
 
     fun createHabitFormViewModel(habitId: Long?) = HabitFormViewModel(habitId, repository, codeStore)
 

@@ -51,6 +51,18 @@ class ScheduleTest {
     }
 
     @Test
+    fun `once a week done on Sunday still counts on Monday when weeks start on Sunday`() {
+        val monday = today.plusDays(1)
+        val sundayWeek = HabitSchedule(habit(Frequency.TimesPerWeek(1)), setOf(today), DayOfWeek.SUNDAY)
+        assertEquals(PeriodProgress(1, 1, StreakUnit.Weeks), sundayWeek.periodProgress(monday))
+        assertFalse(sundayWeek.isOpen(monday))
+        assertEquals(1, sundayWeek.streak(monday).current)
+
+        val mondayWeek = HabitSchedule(habit(Frequency.TimesPerWeek(1)), setOf(today), DayOfWeek.MONDAY)
+        assertEquals(PeriodProgress(0, 1, StreakUnit.Weeks), mondayWeek.periodProgress(monday))
+    }
+
+    @Test
     fun `times per week counts complete weeks and the current one once full`() {
         // Weeks (Mon-Sun): this week Nov 16-22, previous Nov 9-15, Nov 2-8.
         val logs = setOf(d(1), d(3), d(8), d(10), d(15))

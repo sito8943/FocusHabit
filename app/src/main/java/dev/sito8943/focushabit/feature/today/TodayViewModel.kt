@@ -10,6 +10,7 @@ import dev.sito8943.focushabit.core.model.PeriodProgress
 import dev.sito8943.focushabit.core.model.Streak
 import dev.sito8943.focushabit.core.model.dayCompletion
 import dev.sito8943.focushabit.core.model.perfectDaysStreak
+import dev.sito8943.focushabit.core.settings.AppSettings
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import java.time.LocalDate
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +69,7 @@ class TodayViewModel(
     private val repository: HabitRepository,
     private val codeStore: SyncCodeStore,
     private val dates: DateState,
+    private val settings: AppSettings,
 ) : ViewModel() {
 
     val state: StateFlow<TodayUiState> = codeStore.code
@@ -77,9 +79,10 @@ class TodayViewModel(
                 repository.observeLogs(code),
                 dates.selected,
                 dates.today,
-            ) { habits, logs, selected, today ->
+                settings.weekStart,
+            ) { habits, logs, selected, today, weekStart ->
                 val logsByHabit = logs.groupBy({ it.habitId }, { it.date }).mapValues { it.value.toSet() }
-                val schedules = habits.map { HabitSchedule(it, logsByHabit[it.id].orEmpty()) }
+                val schedules = habits.map { HabitSchedule(it, logsByHabit[it.id].orEmpty(), weekStart.dayOfWeek) }
                 val completion = buildMap {
                     var day = today.minusDays(HISTORY_DAYS)
                     while (day <= today.plusDays(FUTURE_DAYS)) {

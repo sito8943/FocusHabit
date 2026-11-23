@@ -22,7 +22,7 @@ sealed interface Frequency {
     /** Due again [days] days after the last time it was done. */
     data class EveryNDays(val days: Int) : Frequency
 
-    /** Any [times] days of each Monday–Sunday week. */
+    /** Any [times] days of each week (first day from Settings). */
     data class TimesPerWeek(val times: Int) : Frequency
 
     /** Any [times] days of each calendar month. */

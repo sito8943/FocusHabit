@@ -10,6 +10,7 @@ import dev.sito8943.focushabit.core.model.HabitSchedule
 import dev.sito8943.focushabit.core.model.Streak
 import dev.sito8943.focushabit.core.model.StreakUnit
 import dev.sito8943.focushabit.core.model.weekdayCounts
+import dev.sito8943.focushabit.core.settings.AppSettings
 import dev.sito8943.focushabit.core.settings.SyncCodeStore
 import java.time.DayOfWeek
 import java.time.LocalDate
@@ -42,15 +43,16 @@ class HabitDetailViewModel(
     private val repository: HabitRepository,
     codeStore: SyncCodeStore,
     private val dates: DateState,
+    private val settings: AppSettings,
 ) : ViewModel() {
 
     val state: StateFlow<HabitDetailUiState> = codeStore.code
         .flatMapLatest { code ->
-            combine(repository.observeHabits(code), repository.observeLogs(code), dates.today) { habits, logs, today ->
+            combine(repository.observeHabits(code), repository.observeLogs(code), dates.today, settings.weekStart) { habits, logs, today, weekStart ->
                 val days = logs.filter { it.habitId == habitId }.mapTo(HashSet()) { it.date }
                 val habit = habits.firstOrNull { it.id == habitId }
                     ?: return@combine HabitDetailUiState(null, today, emptySet(), Streak(0, 0, StreakUnit.Days), 0, emptyMap(), false, loading = false)
-                val schedule = HabitSchedule(habit, days)
+                val schedule = HabitSchedule(habit, days, weekStart.dayOfWeek)
                 val good = if (habit.kind == HabitKind.Build) {
                     days
                 } else {

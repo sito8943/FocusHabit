@@ -17,7 +17,12 @@ data class PeriodProgress(val done: Int, val target: Int, val unit: StreakUnit)
  * Everything that depends on a habit's kind and frequency, computed from its
  * logged days. For a quit habit [logs] are relapses.
  */
-class HabitSchedule(val habit: Habit, val logs: Set<LocalDate>) {
+class HabitSchedule(
+    val habit: Habit,
+    val logs: Set<LocalDate>,
+    /** First day of the week for N-per-week habits (Settings). */
+    private val weekStart: DayOfWeek = DayOfWeek.MONDAY,
+) {
 
     /** First day that counts: creation, or an earlier day logged afterwards. */
     val start: LocalDate =
@@ -177,7 +182,7 @@ class HabitSchedule(val habit: Habit, val logs: Set<LocalDate>) {
         return Streak(current, maxOf(best, current), unit)
     }
 
-    private fun weekOf(day: LocalDate): LocalDate = day.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+    private fun weekOf(day: LocalDate): LocalDate = day.with(TemporalAdjusters.previousOrSame(weekStart))
 }
 
 /**
