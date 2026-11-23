@@ -82,6 +82,7 @@ fun HabitFormScreen(
     onChange: ((HabitFormState) -> HabitFormState) -> Unit,
     onSave: () -> Unit,
     onClose: () -> Unit,
+    onManageCategories: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier.fillMaxSize()) {
@@ -128,7 +129,7 @@ fun HabitFormScreen(
                 }
             }
 
-            CategoryCard(state, onChange)
+            CategoryCard(state, onChange, onManageCategories)
 
             FocusCard(Modifier.fillMaxWidth()) {
                 SectionLabel(stringResource(R.string.form_kind))
@@ -318,7 +319,7 @@ private fun FrequencyCard(state: HabitFormState, onChange: ((HabitFormState) -> 
 /** Suggested icons, a search over the ~1400 of Font Awesome, and "none" (the initial). */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun IconPicker(selected: String?, color: String, onSelect: (String?) -> Unit) {
+internal fun IconPicker(selected: String?, color: String, onSelect: (String?) -> Unit) {
     var query by rememberSaveable { mutableStateOf("") }
     val results = remember(query) { FaIcons.search(query) }
     val tint = FocusColors.parse(color)
@@ -385,7 +386,7 @@ private fun IconCell(
 }
 
 @Composable
-private fun ColorDot(hex: String, selected: Boolean, onClick: () -> Unit) {
+internal fun ColorDot(hex: String, selected: Boolean, onClick: () -> Unit) {
     val description = stringResource(R.string.habit_select_color, hex)
     Box(
         Modifier
@@ -436,10 +437,16 @@ private fun Stepper(
 /** Optional category: "None" or one of the user's categories. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun CategoryCard(state: HabitFormState, onChange: ((HabitFormState) -> HabitFormState) -> Unit) {
+private fun CategoryCard(
+    state: HabitFormState,
+    onChange: ((HabitFormState) -> HabitFormState) -> Unit,
+    onManage: () -> Unit,
+) {
     FocusCard(Modifier.fillMaxWidth()) {
-        SectionLabel(stringResource(R.string.form_category))
-        Spacer(Modifier.height(8.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            SectionLabel(stringResource(R.string.form_category), Modifier.weight(1f))
+            TextButton(onClick = onManage) { Text(stringResource(R.string.form_category_manage)) }
+        }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FilterChip(
                 selected = state.categoryId == null,

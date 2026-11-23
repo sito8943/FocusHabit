@@ -120,7 +120,22 @@
     <string name="form_goal">Meta</string>
     <string name="form_goal_hint">Objetivo opcional a cumplir.</string>
     <string name="form_category">Categoría</string>
-    <string name="form_category_placeholder">Opcional, p. ej. Salud</string>
+    <string name="form_category_manage">Gestionar</string>
+    <string name="categories_title">Categorías</string>
+    <string name="categories_new">Nueva categoría</string>
+    <string name="categories_edit">Editar categoría</string>
+    <string name="categories_name_placeholder">Nombre, p. ej. Salud</string>
+    <string name="categories_empty">Aún no hay categorías. Añade una con + o elige una sugerida.</string>
+    <string name="categories_suggested">Sugeridas</string>
+    <string name="categories_suggested_hint">Toca una para añadirla.</string>
+    <string name="categories_delete_title">¿Borrar «%1$s»?</string>
+    <string name="categories_delete_message">Sus hábitos se quedan, sin categoría.</string>
+    <string name="settings_categories_hint">Agrupa tus hábitos.</string>
+    <plurals name="categories_habit_count">
+        <item quantity="one">%1$d hábito</item>
+        <item quantity="many">%1$d hábitos</item>
+        <item quantity="other">%1$d hábitos</item>
+    </plurals>
     <string name="form_time">Hora</string>
     <string name="form_time_hint">Hora del día opcional; ordena la lista.</string>
     <string name="goal_build_label">veces en total</string>

@@ -47,6 +47,7 @@ fun SettingsScreen(
     onTheme: (ThemeMode) -> Unit,
     onWeekStart: (WeekStart) -> Unit,
     onRecoveryCode: () -> Unit,
+    onCategories: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -106,6 +107,8 @@ fun SettingsScreen(
 
             FocusCard(Modifier.fillMaxWidth()) {
                 SectionLabel(stringResource(R.string.settings_data))
+                Spacer(Modifier.height(8.dp))
+                SettingsLink(Fa.Tag, stringResource(R.string.categories_title), stringResource(R.string.settings_categories_hint), onCategories)
                 Spacer(Modifier.height(8.dp))
                 Surface(
                     onClick = onRecoveryCode,
@@ -171,6 +174,26 @@ private fun <T> Choice(
                     shape = SegmentedButtonDefaults.itemShape(index, options.size),
                 ) { Text(text(option), maxLines = 1) }
             }
+        }
+    }
+}
+
+@Composable
+private fun SettingsLink(icon: String, title: String, hint: String, onClick: () -> Unit) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            FaIcon(icon, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            FaIcon(Fa.ChevronRight, null, Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
