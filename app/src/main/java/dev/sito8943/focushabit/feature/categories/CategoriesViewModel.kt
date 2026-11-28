@@ -44,10 +44,18 @@ class CategoriesViewModel(
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CategoriesUiState())
 
+    /** Called with the id of each category created here (not edits). */
+    var onCreated: ((Long) -> Unit)? = null
+
     /** Creates it when [Category.id] is 0, otherwise edits it. */
     fun save(category: Category) {
         if (category.name.isBlank()) return
-        viewModelScope.launch { repository.saveCategory(codeStore.code.value, category.copy(name = category.name.trim())) }
+        // Taken now: leaving the screen right after saving still selects it.
+        val notify = onCreated.takeIf { category.id == 0L }
+        viewModelScope.launch {
+            val id = repository.saveCategory(codeStore.code.value, category.copy(name = category.name.trim()))
+            notify?.invoke(id)
+        }
     }
 
     fun addPrefab(prefab: CategoryPrefab, spanish: Boolean) =

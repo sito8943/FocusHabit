@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- `ec5deb9` feat: make the selected category chip stand out
+- `b77c8d0` feat: select a category created from the habit form
+
 ## 0.2.0
 
 - `ce20644` fix: N-per-week habits ignored the week start setting

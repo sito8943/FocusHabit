@@ -25,6 +25,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -449,24 +450,43 @@ private fun CategoryCard(
             TextButton(onClick = onManage) { Text(stringResource(R.string.form_category_manage)) }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Selected chip: filled + check, so unselected ones don't read as "this habit has it".
+            val colors = FilterChipDefaults.filterChipColors(
+                selectedContainerColor = MaterialTheme.colorScheme.primary,
+                selectedLabelColor = MaterialTheme.colorScheme.onPrimary,
+                selectedLeadingIconColor = MaterialTheme.colorScheme.onPrimary,
+            )
+            val noneSelected = state.categoryId == null
             FilterChip(
-                selected = state.categoryId == null,
+                selected = noneSelected,
                 onClick = { onChange { it.copy(categoryId = null) } },
                 label = { Text(stringResource(R.string.list_no_category)) },
+                leadingIcon = if (noneSelected) {
+                    { FaIcon(Fa.Check, contentDescription = null, modifier = Modifier.size(14.dp)) }
+                } else {
+                    null
+                },
+                colors = colors,
             )
             state.categories.forEach { category ->
+                val selected = state.categoryId == category.id
                 FilterChip(
-                    selected = state.categoryId == category.id,
+                    selected = selected,
                     onClick = { onChange { it.copy(categoryId = category.id) } },
                     label = { Text(category.label()) },
                     leadingIcon = {
-                        FaIcon(
-                            category.icon ?: Fa.Tag,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = FocusColors.parse(category.color),
-                        )
+                        if (selected) {
+                            FaIcon(Fa.Check, contentDescription = null, modifier = Modifier.size(14.dp))
+                        } else {
+                            FaIcon(
+                                category.icon ?: Fa.Tag,
+                                contentDescription = null,
+                                modifier = Modifier.size(14.dp),
+                                tint = FocusColors.parse(category.color),
+                            )
+                        }
                     },
+                    colors = colors,
                 )
             }
         }

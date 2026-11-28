@@ -75,8 +75,10 @@ class HabitFormViewModel(
         viewModelScope.launch {
             repository.observeCategories(codeStore.code.value).collect { categories ->
                 _state.update { form ->
-                    // A category deleted meanwhile is no longer selectable.
-                    form.copy(categories = categories, categoryId = form.categoryId?.takeIf { id -> categories.any { it.id == id } })
+                    // A category deleted meanwhile is no longer selectable. One just created
+                    // (selected before this list caught up) is kept: it was never in the old list.
+                    val deleted = { id: Long -> form.categories.any { it.id == id } && categories.none { it.id == id } }
+                    form.copy(categories = categories, categoryId = form.categoryId?.takeUnless(deleted))
                 }
             }
         }

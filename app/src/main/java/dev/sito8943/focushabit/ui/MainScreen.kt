@@ -28,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -71,6 +72,8 @@ fun MainScreen(container: AppContainer) {
     var openHabit by rememberSaveable { mutableStateOf<Long?>(null) }
     /** Habit form: [NEW_HABIT] to create, an id to edit, null when closed. */
     var form by rememberSaveable { mutableStateOf<Long?>(null) }
+    /** Category created from the form's "Manage": selected for that habit on return. */
+    var createdCategory by rememberSaveable { mutableStateOf<Long?>(null) }
     /**
      * Bumped on every opening, and part of the form ViewModel's key: each
      * opening gets a fresh form. With a fixed key the activity-scoped ViewModel
@@ -98,7 +101,12 @@ fun MainScreen(container: AppContainer) {
     BackHandler(enabled = tab != Tab.Today) { tab = Tab.Today }
 
     if (showCategories) {
-        CategoriesRoute(container, onClose = { showCategories = false })
+        CategoriesRoute(
+            container,
+            onClose = { showCategories = false },
+            // Only when opened from the habit form: she expects a new category to be this habit's.
+            onCreated = if (form != null) { id -> createdCategory = id } else null,
+        )
         return
     }
     if (showSettings) {
@@ -118,6 +126,8 @@ fun MainScreen(container: AppContainer) {
             formSession,
             onClose = { form = null },
             onManageCategories = { showCategories = true },
+            createdCategory = createdCategory,
+            onCreatedCategoryApplied = { createdCategory = null },
         )
         return
     }
@@ -252,8 +262,12 @@ private fun SettingsRoute(
 }
 
 @Composable
-private fun CategoriesRoute(container: AppContainer, onClose: () -> Unit) {
+private fun CategoriesRoute(container: AppContainer, onClose: () -> Unit, onCreated: ((Long) -> Unit)?) {
     val vm = viewModel { container.createCategoriesViewModel() }
+    DisposableEffect(vm, onCreated) {
+        vm.onCreated = onCreated
+        onDispose { vm.onCreated = null }
+    }
     val state by vm.state.collectAsStateWithLifecycle()
     BackHandler(onBack = onClose)
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -314,8 +328,16 @@ private fun HabitFormRoute(
     session: Int,
     onClose: () -> Unit,
     onManageCategories: () -> Unit,
+    createdCategory: Long?,
+    onCreatedCategoryApplied: () -> Unit,
 ) {
     val vm = viewModel(key = "form-${habitId ?: "new"}-$session") { container.createHabitFormViewModel(habitId) }
+    LaunchedEffect(createdCategory) {
+        createdCategory?.let { id ->
+            vm.update { it.copy(categoryId = id) }
+            onCreatedCategoryApplied()
+        }
+    }
     val state by vm.state.collectAsStateWithLifecycle()
     BackHandler(onBack = onClose)
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
